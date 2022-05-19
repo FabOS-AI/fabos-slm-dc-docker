@@ -7,6 +7,9 @@
   ansible.builtin.shell: "date -s \"{{ date_and_time }}\""
   changed_when: false
 
+- name: Allow release-info change for APT repositories (required on older buster releases)
+  command: apt-get update -y --allow-releaseinfo-change
+
 - name: Download Docker install convenience script.
   ansible.builtin.get_url:
     url: https://get.docker.com/
