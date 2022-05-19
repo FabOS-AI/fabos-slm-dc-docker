@@ -1,7 +1,7 @@
 ---
 - name: Get date of control node
   set_fact:
-    date_and_time: "{{ lookup('pipe','date') }}"
+    date_and_time: "{{ lookup('pipe','date \"+%C%y-%m-%d %H:%M:%S\"') }}"
 
 - name: Assure date/time of target host aligns with control node
   ansible.builtin.shell: "date -s \"{{ date_and_time }}\""
