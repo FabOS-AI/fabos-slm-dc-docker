@@ -19,7 +19,6 @@
 - set_fact:
     vault_lookup_base_info: "url={{ vault_url }} auth_method=approle role_id={{ vault_approle_role_id }} secret_id={{ vault_approle_secret_id }}"
 
-
 - set_fact:
     filter_exp: "{{ 'ID==\"' + resource_id + '\"' | urlencode() }}"
 
