@@ -34,11 +34,11 @@
         when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
 
     - name: "Login to required Docker Registries"
-        docker_login:
-          registry: "{{ item.address }}"
-          username: "{{ item.username }}"
-          password: "{{ item.password }}"
-          reauthorize: yes
+      docker_login:
+        registry: "{{ item.address }}"
+        username: "{{ item.username }}"
+        password: "{{ item.password }}"
+        reauthorize: yes
       with_items: "{{ docker_registries }}"
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
       no_log: true
@@ -49,9 +49,9 @@
         tasks_from: deploy.yml
 
     - name: "Logout from required Docker Registries"
-        docker_login:
-          registry: "{{ item.address }}"
-          state: absent
+      docker_login:
+        registry: "{{ item.address }}"
+        state: absent
       with_items: "{{ docker_registries }}"
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
       no_log: true
