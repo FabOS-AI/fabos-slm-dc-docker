@@ -1,0 +1,8 @@
+*.retry
+*/__pycache__
+*.pyc
+.idea
+.gitignore
+portainer_config
+RUN_MOLECULE.txt
+*.iml

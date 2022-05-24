@@ -16,12 +16,42 @@
     - include_role:
         name: inventory_helper
 
+    - include_role:
+        name: "use"
+        tasks_from: helper/get_docker_registry_credentials.yml
+      vars:
+        docker_registries_vault_paths: "{{ item }}"
+      with_items: "{{ docker_registries_vault_paths }}"
+      when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
+
 - name: Deploy container on docker host
   hosts: target_hosts
   gather_facts: yes
   become: yes
   tasks:
+    - set_fact:
+        docker_registries: "{{ hostvars['localhost']['docker_registries'] }}"
+        when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
+
+    - name: "Login to required Docker Registries"
+      docker_login:
+        registry: "{{ item.address }}"
+        username: "{{ item.username }}"
+        password: "{{ item.password }}"
+        reauthorize: yes
+      with_items: "{{ docker_registries }}"
+      when: "(docker_registries is defined) and (docker_registries|length > 0)"
+      no_log: true
+
     - name: "Include use - install"
       include_role:
         name: "use"
         tasks_from: deploy.yml
+
+    - name: "Logout from required Docker Registries"
+      docker_login:
+        registry: "{{ item.address }}"
+        state: absent
+      with_items: "{{ docker_registries }}"
+      when: "(docker_registries is defined) and (docker_registries|length > 0)"
+      no_log: true
