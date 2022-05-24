@@ -19,10 +19,9 @@
     - include_role:
         name: "use"
         tasks_from: helper/get_docker_registry_credentials.yml
-      vars:
-        docker_registries_vault_paths: "{{ item }}"
-      with_items: "{{ docker_registries_vault_paths }}"
-      when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
+      loop: "{{ docker_registries_vault_paths }}"
+      loop_control:
+        loop_var: docker_registries_vault_paths
 
 - name: Deploy container on docker host
   hosts: target_hosts
