@@ -30,7 +30,7 @@
   tasks:
     - set_fact:
         docker_registries: "{{ hostvars['localhost']['docker_registries'] }}"
-        when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
+      when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
 
     - name: "Login to required Docker Registries"
       docker_login:
