@@ -19,7 +19,6 @@
 - set_fact:
     vault_lookup_base_info: "url={{ vault_url }} auth_method=approle role_id={{ vault_approle_role_id }} secret_id={{ vault_approle_secret_id }}"
 
-
 - set_fact:
     filter_exp: "{{ 'ID==\"' + resource_id + '\"' | urlencode() }}"
 
@@ -38,7 +37,7 @@
 
 - name: Set resource credentials
   set_fact:
-    ip_address: "{{ node_info.Node }}"
+    ip_address: "{{ node_info.Address }}"
     username: "{{ lookup('hashi_vault', '{{ vault_lookup_base_info }} secret=resources/data/{{ resource_id }}:username') }}"
     password: "{{ lookup('hashi_vault', '{{ vault_lookup_base_info }} secret=resources/data/{{ resource_id }}:password') }}"
   no_log: true

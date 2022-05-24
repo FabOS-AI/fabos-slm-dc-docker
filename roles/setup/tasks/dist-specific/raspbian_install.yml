@@ -9,6 +9,7 @@
 
 - name: Allow release-info change for APT repositories (required on older buster releases)
   command: apt-get update -y --allow-releaseinfo-change
+  changed_when: false
 
 - name: Download Docker install convenience script.
   ansible.builtin.get_url:
