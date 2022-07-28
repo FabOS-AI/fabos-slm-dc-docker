@@ -25,6 +25,7 @@
         state: touch
         force: yes
 
-    - shell:
+    - name: Print Summary
+      shell:
         cmd: "echo '{{ item }}' >> {{ role_name }}_{{ scenario_name }}.report"
       loop: "{{ summary }}"
