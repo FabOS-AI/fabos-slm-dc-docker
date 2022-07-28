@@ -8,6 +8,7 @@
       include_role:
         name: "use"
         tasks_from: helper/get_docker_registry_credentials.yml
+      when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
       loop: "{{ docker_registries_vault_paths|default([]) }}"
       loop_control:
         loop_var: docker_registry_vault_path
