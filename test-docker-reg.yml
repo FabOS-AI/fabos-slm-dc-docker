@@ -1,0 +1,13 @@
+---
+- name: "Create inventory with target host(s)"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Get Docker registry credentials
+      include_role:
+        name: "use"
+        tasks_from: helper/get_docker_registry_credentials.yml
+      loop: "{{ docker_registries_vault_paths|default([]) }}"
+      loop_control:
+        loop_var: docker_registry_vault_path
