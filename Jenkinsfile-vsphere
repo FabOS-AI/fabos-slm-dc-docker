@@ -12,6 +12,7 @@ node("built-in") {
                     usernameVariable: 'VSPHERE_USER',
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
+                sh "cd ./roles/use && molecule reset -s deploy"
                 sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
             }
         }
