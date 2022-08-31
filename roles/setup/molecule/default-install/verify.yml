@@ -2,7 +2,7 @@
 # This is an example playbook to execute Ansible tests.
 
 - name: Verify
-  hosts: all:!hypervisor
+  hosts: all
   gather_facts: false
   tasks:
     - name: Do hello-world
