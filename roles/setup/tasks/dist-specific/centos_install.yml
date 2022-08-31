@@ -1,86 +1,12 @@
 ---
 - name: Install the yum-utils package
-  yum:
+  ansible.builtin.yum:
     name: yum-utils
 
-- name: Install docker on CentOS 7/8
-  when: ansible_distribution_major_version == "7" or ansible_distribution_major_version == "8"
-  block:
-    - name: Add stable docker repository (Version 7/8)
-      ansible.builtin.yum_repository:
-        name: docker
-        description: Docker stable repository
-        baseurl: "https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable"
-        gpgcheck: no
+- name: Run CentOS7-specific install part
+  when: ansible_distribution_major_version == "7"
+  ansible.builtin.include_tasks: dist-specific/centos_7_install.yml
 
-    - name: Install docker
-      ansible.builtin.yum:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-        update_cache: yes
-
-    - name: Enable and Start docker daemon
-      ansible.builtin.systemd:
-        state: started
-        name: docker
-        enabled: yes
-
-    - name: Install pip2 / docker-compose (CentOS 7)
-      when: ansible_distribution_major_version == "7"
-      block:
-        - name: Install epel-release (CentOS 7)
-          ansible.builtin.yum:
-            name:
-              - epel-release
-
-        - name: Install pip2 (CentOS 7)
-          ansible.builtin.yum:
-            name: python-pip
-          register: output_install_pip
-          retries: 3
-          until: output_install_pip.failed == false
-
-        - name: Download docker-compose (CentOS 7)
-          get_url:
-            url: https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64
-            dest: /usr/local/bin/docker-compose
-            mode: 755
-
-        - name: Get list of installed pip packages
-          command: pip freeze
-          changed_when: false
-          register: pip_package_freeze
-
-        - name: Install 'docker', 'docker-compose', 'websocket-client' pip package (CentOS 7)
-          ansible.builtin.pip:
-            name: "{{ item.name }}"
-            version: "{{ item.version }}"
-          when: pip_package_freeze.stdout_lines | select('search', item.name+'==') | list | length == 0
-          loop:
-            - name: docker
-              version: 4.4.4
-            - name: docker-compose
-              version: 1.23.2
-            - name: websocket-client
-              version: 0.32.0
-
-
-    - name: Install pip3 / docker-compose (CentOS 8)
-      when: ansible_distribution_major_version == "8"
-      block:
-        - name: Install pip3 (CentOS 8)
-          ansible.builtin.yum:
-            name: python3-pip
-
-        - name: Upgrade pip (CentOS 8)
-          ansible.builtin.pip:
-            name: pip
-            state: latest
-
-        - name: Install 'docker', 'docker-compose' pip package (CentOS 8)
-          ansible.builtin.pip:
-            name:
-              - docker
-              - docker-compose
+- name: Run CentOS8-specific install part
+  when: ansible_distribution_major_version == "8"
+  ansible.builtin.include_tasks: dist-specific/centos_8_install.yml

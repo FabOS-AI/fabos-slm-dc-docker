@@ -1,0 +1,36 @@
+---
+- name: Add stable docker repository
+  ansible.builtin.yum_repository:
+    name: docker
+    description: Docker stable repository
+    baseurl: "https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable"
+    gpgcheck: no
+
+- name: Install docker
+  ansible.builtin.yum:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    update_cache: yes
+
+- name: Enable and Start docker daemon
+  ansible.builtin.systemd:
+    state: started
+    name: docker
+    enabled: yes
+
+- name: Install pip3
+  ansible.builtin.yum:
+    name: python3-pip
+
+- name: Upgrade pip
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+
+- name: Install 'docker', 'docker-compose' pip package (CentOS 8)
+  ansible.builtin.pip:
+    name:
+      - docker
+      - docker-compose
