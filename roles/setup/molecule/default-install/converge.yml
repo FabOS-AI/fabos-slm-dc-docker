@@ -5,6 +5,9 @@
   gather_facts: no
   tasks:
     - debug:
+        var: ansible_facts
+
+    - debug:
         var: hostvars
 
 - name: Converge
