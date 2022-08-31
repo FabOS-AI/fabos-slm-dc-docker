@@ -5,7 +5,7 @@ node("built-in") {
 
     stage("Create") {
         withCredentials([usernamePassword(
-                credentialsId: jenkinsUserCredentialId,
+                credentialsId: jenkins_infra_account,
                 usernameVariable: 'VSPHERE_USER',
                 passwordVariable: 'VSPHERE_PASSWORD'
         )]) {
@@ -31,7 +31,7 @@ node("built-in") {
 
     stage("Destroy") {
         withCredentials([usernamePassword(
-                credentialsId: jenkinsUserCredentialId,
+                credentialsId: jenkins_infra_account,
                 usernameVariable: 'VSPHERE_USER',
                 passwordVariable: 'VSPHERE_PASSWORD'
         )]) {
