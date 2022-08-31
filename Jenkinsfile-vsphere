@@ -1,6 +1,8 @@
 node("built-in") {
     stage("Checkout") {
         checkout scm
+
+        sh 'ansible-galaxy install -f -r requirements.yml'
     }
 
     stage("Create") {
