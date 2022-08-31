@@ -4,7 +4,13 @@ node("built-in") {
     }
 
     stage("Create") {
-        sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+        withCredentials([usernamePassword(
+                credentialsId: jenkinsUserCredentialId,
+                usernameVariable: 'VSPHERE_USER',
+                passwordVariable: 'VSPHERE_PASSWORD'
+        )]) {
+            sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+        }
     }
 
     stage("Install") {
@@ -24,6 +30,12 @@ node("built-in") {
     }
 
     stage("Destroy") {
-        sh "cd ./roles/setup && molecule destroy -s uninstall"
+        withCredentials([usernamePassword(
+                credentialsId: jenkinsUserCredentialId,
+                usernameVariable: 'VSPHERE_USER',
+                passwordVariable: 'VSPHERE_PASSWORD'
+        )]) {
+            sh "cd ./roles/setup && molecule destroy -s uninstall"
+        }
     }
 }
