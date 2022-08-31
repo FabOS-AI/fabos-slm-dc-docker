@@ -5,39 +5,41 @@ node("built-in") {
         sh 'ansible-galaxy install -f -r requirements.yml'
     }
 
-    stage("Create") {
-        withCredentials([usernamePassword(
-                credentialsId: 'jenkins_infra_account',
-                usernameVariable: 'VSPHERE_USER',
-                passwordVariable: 'VSPHERE_PASSWORD'
-        )]) {
-            sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+    try {
+        stage("Create") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+            }
         }
-    }
 
-    stage("Install") {
-        sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
-    }
+        stage("Install") {
+            sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
+        }
 
-    stage("Deploy") {
-        sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
-    }
+        stage("Deploy") {
+            sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
+        }
 
-    stage("Undeploy") {
-        sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
-    }
+        stage("Undeploy") {
+            sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
+        }
 
-    stage("Uninstall") {
-        sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
-    }
-
-    stage("Destroy") {
-        withCredentials([usernamePassword(
-                credentialsId: 'jenkins_infra_account',
-                usernameVariable: 'VSPHERE_USER',
-                passwordVariable: 'VSPHERE_PASSWORD'
-        )]) {
-            sh "cd ./roles/setup && molecule destroy -s uninstall"
+        stage("Uninstall") {
+            sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
+        }
+    } finally {
+        stage("Destroy") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule destroy -s uninstall"
+            }
         }
     }
 }
