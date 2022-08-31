@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: false
   no_log: "{{ molecule_no_log }}"
-  become: yes
+  become: no
   tasks:
     # TODO: Developer must implement and populate 'server' variable
     - include_role:
