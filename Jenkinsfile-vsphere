@@ -41,7 +41,13 @@ node("built-in") {
         }
 
         stage("Uninstall") {
-            sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
+            }
         }
     } finally {
         stage("Destroy") {
