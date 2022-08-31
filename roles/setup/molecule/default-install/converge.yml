@@ -1,15 +1,4 @@
 ---
-- name: Debug
-  hosts: localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - debug:
-        var: ansible_facts
-
-    - debug:
-        var: hostvars
-
 - name: Converge
   hosts: all
   gather_facts: yes

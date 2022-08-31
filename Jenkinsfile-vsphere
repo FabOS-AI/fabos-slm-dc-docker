@@ -21,11 +21,23 @@ node("built-in") {
         }
 
         stage("Deploy") {
-            sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
+            }
         }
 
         stage("Undeploy") {
-            sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
+            }
         }
 
         stage("Uninstall") {
