@@ -9,18 +9,27 @@ platforms:
   - name: ubuntu1804
     os: ubuntu
     version: 1804
+    template_name: ubuntu-18-04
+    groups:
+      - test-machine
 
   - name: ubuntu2004
     os: ubuntu
     version: 2004
+    template_name: ubuntu-20-04
+    groups:
+      - test-machine
 
-  - name: ubuntu2110
-    os: ubuntu
-    version: 2110
+#  - name: ubuntu2110
+#    os: ubuntu
+#    version: 2110
 
   - name: ubuntu2204
     os: ubuntu
     version: 2204
+    template_name: ubuntu-22-04
+    groups:
+      - test-machine
 provisioner:
   name: ansible
   playbooks:

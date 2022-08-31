@@ -1,0 +1,29 @@
+node("built-in") {
+    stage("Checkout") {
+        checkout scm
+    }
+
+    stage("Create") {
+        sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+    }
+
+    stage("Install") {
+        sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
+    }
+
+    stage("Deploy") {
+        sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
+    }
+
+    stage("Undeploy") {
+        sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
+    }
+
+    stage("Uninstall") {
+        sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
+    }
+
+    stage("Destroy") {
+        sh "cd ./roles/setup && molecule destroy -s uninstall"
+    }
+}
