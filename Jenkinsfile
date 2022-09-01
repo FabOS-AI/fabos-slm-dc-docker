@@ -23,7 +23,13 @@ node("built-in") {
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
                 sh "cd ./roles/setup && molecule reset -s install"
-                sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
+
+                parallel install-ubuntu: {
+                    sh "cd ./roles/setup && molecule converge -s install-ubuntu && molecule verify -s install-ubuntu"
+                }, install-centos: {
+                    sh "cd ./roles/setup && molecule converge -s install-centos && molecule verify -s install-centos"
+                }
+
             }
         }
 
