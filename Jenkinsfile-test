@@ -51,7 +51,8 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/setup && molecule converge -s install-ubuntu && molecule verify -s install-ubuntu'
+                                    //sh 'cd ./roles/setup && molecule converge -s install-ubuntu && molecule verify -s install-ubuntu'
+                                    sh 'cd ./roles/setup && molecule test -s install-ubuntu -p ubuntu2204 --destroy never'
                                 }
                             }
                         }
@@ -63,7 +64,7 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/use && molecule converge -s deploy-ubuntu && molecule verify -s deploy-ubuntu'
+                                    sh 'cd ./roles/use && molecule test -s deploy-ubuntu -p ubuntu2204 --destroy never'
                                 }
                             }
                         }
@@ -75,7 +76,7 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/use && molecule converge -s undeploy-ubuntu && molecule verify -s undeploy-ubuntu'
+                                    sh 'cd ./roles/use && molecule test -s undeploy-ubuntu -p ubuntu2204 --destroy never'
                                 }
                             }
                         }
@@ -87,7 +88,7 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/setup && molecule converge -s uninstall-ubuntu && molecule verify -s uninstall-ubuntu'
+                                    sh 'cd ./roles/setup && molecule test -s uninstall-ubuntu -p ubuntu2204 --destroy never'
                                 }
                             }
                         }
@@ -133,7 +134,7 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/setup && molecule converge -s install-centos && molecule verify -s install-centos'
+                                    sh 'cd ./roles/setup && molecule test -s install-centos -p centos8 --destroy never'
                                 }
                             }
                         }
@@ -145,7 +146,7 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/use && molecule converge -s deploy-centos && molecule verify -s deploy-centos'
+                                    sh 'cd ./roles/use && molecule test -s deploy-centos -p centos8 --destroy never'
                                 }
                             }
                         }
@@ -157,7 +158,7 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/use && molecule converge -s undeploy-centos && molecule verify -s undeploy-centos'
+                                    sh 'cd ./roles/use && molecule test -s undeploy-centos -p centos8 --destroy never'
                                 }
                             }
                         }
@@ -169,7 +170,7 @@ pipeline {
                                         usernameVariable: 'VSPHERE_USER',
                                         passwordVariable: 'VSPHERE_PASSWORD'
                                 )]) {
-                                    sh 'cd ./roles/setup && molecule converge -s uninstall-centos && molecule verify -s uninstall-centos'
+                                    sh 'cd ./roles/setup && molecule test -s uninstall-centos -p centos8 --destroy never'
                                 }
                             }
                         }
