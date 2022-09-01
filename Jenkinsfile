@@ -24,12 +24,17 @@ node("built-in") {
             )]) {
                 sh "cd ./roles/setup && molecule reset -s install"
 
-                parallel install-ubuntu: {
+                install_stages = [:]
+
+                install_stages['install-ubuntu'] = {
                     sh "cd ./roles/setup && molecule converge -s install-ubuntu && molecule verify -s install-ubuntu"
-                }, install-centos: {
+                }
+
+                install_stages['install-centos'] = {
                     sh "cd ./roles/setup && molecule converge -s install-centos && molecule verify -s install-centos"
                 }
 
+                parallel install_stages
             }
         }
 
