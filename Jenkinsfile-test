@@ -92,18 +92,6 @@ pipeline {
                                 }
                             }
                         }
-
-                        stage("Destroy") {
-                            steps {
-                                withCredentials([usernamePassword(
-                                        credentialsId: 'jenkins_infra_account',
-                                        usernameVariable: 'VSPHERE_USER',
-                                        passwordVariable: 'VSPHERE_PASSWORD'
-                                )]) {
-                                    sh 'cd ./roles/setup && molecule destroy -s install-ubuntu'
-                                }
-                            }
-                        }
                     }
                 }
                 stage("CentOS") {
@@ -175,19 +163,22 @@ pipeline {
                             }
                         }
 
-                        stage("Destroy") {
-                            steps {
-                                withCredentials([usernamePassword(
-                                        credentialsId: 'jenkins_infra_account',
-                                        usernameVariable: 'VSPHERE_USER',
-                                        passwordVariable: 'VSPHERE_PASSWORD'
-                                )]) {
-                                    sh 'cd ./roles/setup && molecule destroy -s install-centos'
-                                }
-                            }
+
+                    }
+                }
+
+                stage("Destroy") {
+                    steps {
+                        withCredentials([usernamePassword(
+                                credentialsId: 'jenkins_infra_account',
+                                usernameVariable: 'VSPHERE_USER',
+                                passwordVariable: 'VSPHERE_PASSWORD'
+                        )]) {
+                            sh 'cd ./roles/setup && molecule destroy -s install'
                         }
                     }
                 }
+
             }
         }
     }
