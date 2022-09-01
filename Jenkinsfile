@@ -27,7 +27,9 @@ node("built-in") {
                 install_stages = [:]
 
                 install_stages['install-ubuntu'] = {
-                    sh 'docker run -v \$(pwd):/tmp/roles --env VSPHERE_PASSWORD=$VSPHERE_PASSWORD --env VSPHERE_HOSTNAME=$VSPHERE_HOSTNAME --env VSPHERE_USER=$VSPHERE_USER -w /tmp/roles/roles/setup --rm fabos4ai/molecule:4.0.1  bash -c \"ansible-galaxy install -f -r /tmp/roles/requirements.yml && molecule converge -s install-ubuntu\"'
+                    sh 'whoami'
+                    sh 'docker --version'
+                    sh 'docker run -v \$(pwd):/tmp/roles --env VSPHERE_PASSWORD=$VSPHERE_PASSWORD --env VSPHERE_HOSTNAME=$VSPHERE_HOSTNAME --env VSPHERE_USER=$VSPHERE_USER -w /tmp/roles/roles/setup --rm fabos4ai/molecule:4.0.1  bash -c \\\"ansible-galaxy install -f -r /tmp/roles/requirements.yml && molecule converge -s install-ubuntu\"'
 
 //                    sh "cd ./roles/setup && molecule test -s install-ubuntu --parallel" //&& molecule verify -s install-ubuntu"
                 }
