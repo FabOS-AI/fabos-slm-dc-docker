@@ -27,12 +27,10 @@ node("built-in") {
                 install_stages = [:]
 
                 install_stages['install-ubuntu'] = {
-                    sh "cd ./roles/setup && molecule reset -s install-ubuntu"
                     sh "cd ./roles/setup && molecule test -s install-ubuntu --parallel" //&& molecule verify -s install-ubuntu"
                 }
 
                 install_stages['install-centos'] = {
-                    sh "cd ./roles/setup && molecule reset -s install-centos"
                     sh "cd ./roles/setup && molecule test -s install-centos --parallel" // && molecule verify -s install-centos"
                 }
 
@@ -80,6 +78,8 @@ node("built-in") {
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
                 sh "cd ./roles/setup && molecule destroy -s uninstall"
+                sh "cd ./roles/setup && molecule reset -s install-ubuntu"
+                sh "cd ./roles/setup && molecule reset -s install-centos"
             }
         }
     }
