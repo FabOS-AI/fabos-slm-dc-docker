@@ -1,0 +1,193 @@
+pipeline {
+    agent any
+    stages {
+        stage("Checkout") {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage("Create") {
+            steps {
+                withCredentials([usernamePassword(
+                        credentialsId: 'jenkins_infra_account',
+                        usernameVariable: 'VSPHERE_USER',
+                        passwordVariable: 'VSPHERE_PASSWORD'
+                )]) {
+                    sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+                }
+            }
+        }
+
+        stage("Tests") {
+            parallel {
+                stage("Ubuntu") {
+                    agent {
+                        docker {
+                            image 'fabos4ai/molecule:4.0.1'
+                            args '-u root'
+                        }
+                    }
+
+                    stages {
+                        stage("Requirements") {
+
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'ansible-galaxy install -f -r requirements.yml'
+                                }
+                            }
+
+                        }
+
+                        stage("Test Install") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/setup && molecule converge -s install-ubuntu && molecule verify -s install-ubuntu'
+                                }
+                            }
+                        }
+
+                        stage("Test Deploy") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/use && molecule converge -s deploy-ubuntu && molecule verify -s deploy-ubuntu'
+                                }
+                            }
+                        }
+
+                        stage("Test Undeploy") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/use && molecule converge -s undeploy-ubuntu && molecule verify -s undeploy-ubuntu'
+                                }
+                            }
+                        }
+
+                        stage("Test Uninstall") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/setup && molecule converge -s uninstall-ubuntu && molecule verify -s uninstall-ubuntu'
+                                }
+                            }
+                        }
+
+                        stage("Destroy") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/setup && molecule destroy -s install-ubuntu'
+                                }
+                            }
+                        }
+                    }
+                }
+                stage("CentOS") {
+                    agent {
+                        docker {
+                            image 'fabos4ai/molecule:4.0.1'
+                            args '-u root'
+                        }
+                    }
+
+                    stages {
+                        stage("Requirements") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'ansible-galaxy install -f -r requirements.yml'
+                                }
+                            }
+                        }
+
+                        stage("Test Install") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/setup && molecule converge -s install-centos && molecule verify -s install-centos'
+                                }
+                            }
+                        }
+
+                        stage("Test Deploy") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/use && molecule converge -s deploy-centos && molecule verify -s deploy-centos'
+                                }
+                            }
+                        }
+
+                        stage("Test Undeploy") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/use && molecule converge -s undeploy-centos && molecule verify -s undeploy-centos'
+                                }
+                            }
+                        }
+
+                        stage("Test Uninstall") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/setup && molecule converge -s uninstall-centos && molecule verify -s uninstall-centos'
+                                }
+                            }
+                        }
+
+                        stage("Destroy") {
+                            steps {
+                                withCredentials([usernamePassword(
+                                        credentialsId: 'jenkins_infra_account',
+                                        usernameVariable: 'VSPHERE_USER',
+                                        passwordVariable: 'VSPHERE_PASSWORD'
+                                )]) {
+                                    sh 'cd ./roles/setup && molecule destroy -s install-centos'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
