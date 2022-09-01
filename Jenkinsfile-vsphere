@@ -17,8 +17,14 @@ node("built-in") {
         }
 
         stage("Install") {
-            sh "cd ./roles/setup && molecule reset -s install"
-            sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule reset -s install"
+                sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
+            }
         }
 
         stage("Deploy") {
