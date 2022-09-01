@@ -1,128 +1,73 @@
-def scenarios = [
-    "master" : [
-        "ubuntu": [
-            ["setup", "install-ubuntu"],
-            ["use", "deploy-ubuntu"],
-            ["use", "undeploy-ubuntu"],
-            ["setup", "uninstall-ubuntu"],
-        ]
-    ],
-    "Agent-1" : [
-        "centos" : [
-            ["setup", "install-centos"],
-            ["use", "deploy-centos"],
-            ["use", "undeploy-centos"],
-            ["setup", "uninstall-centos"],
-        ]
-    ],
-]
+node("built-in") {
+    stage("Checkout") {
+        checkout scm
 
-def nodes = [:]
+        sh 'ansible-galaxy install -f -r requirements.yml'
+    }
 
-for (kv in mapToList(scenarios)) {
-    def nodeName = kv[0]
-    def distList = kv[1]
-
-    nodes[nodeName] = {
-        node("${nodeName}") {
-
-            /**
-            *
-            *   CHECKOUT
-            *
-            **/
-
-            stage("Checkout") {
-                checkout scm
-
-                sh 'ansible-galaxy install -f -r requirements.yml'
+    try {
+        stage("Create") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
             }
+        }
 
-            for (xy in mapToList(distList)) {
-                def distName = xy[0]
-                def scenarioList = xy[1]
+        stage("Install") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule reset -s install"
+                sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
+            }
+        }
 
-                try {
-                    /**
-                    *
-                    *   CREATE
-                    *
-                    **/
+        stage("Deploy") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/use && molecule reset -s deploy"
+                sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
+            }
+        }
 
-                    def createRole = scenarioList.first()[0]
-                    def createScenario = scenarioList.first()[1]
+        stage("Undeploy") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/use && molecule reset -s undeploy"
+                sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
+            }
+        }
 
-                    stage("Create - ${distName}") {
-                        withEnv([
-                        'HYPERVISOR_ANSIBLE_USER=',
-                        'HYPERVISOR_ANSIBLE_HOST=localhost',
-                        'HYPERVISOR_ANSIBLE_CONNECTION=local',
-                        'HYPERVISOR_ANSIBLE_PASSWORD=',
-                        'ANSIBLE_SERIAL=5',
-                        ]) {
-                            retry(2) {
-                                sh "cd ./roles/${createRole} && molecule reset -s ${createScenario} && molecule create -s ${createScenario}"
-                            }
-                        }
-                    }
-
-                    /**
-                    *
-                    *   INSTALL, DEPLOY, UNDEPLOY, UNINSTALL
-                    *
-                    **/
-
-                    for(int i = 0; i < scenarioList.size(); i++) {
-                        def role = scenarioList[i][0]
-                        def scenario = scenarioList[i][1]
-
-                        stage("${scenario}") {
-                            withEnv([
-                            'HYPERVISOR_ANSIBLE_USER=',
-                            'HYPERVISOR_ANSIBLE_HOST=localhost',
-                            'HYPERVISOR_ANSIBLE_CONNECTION=local',
-                            'HYPERVISOR_ANSIBLE_PASSWORD=',
-                            'ANSIBLE_SERIAL=5',
-                            ]) {
-                                sh "cd ./roles/${role} && molecule converge -s ${scenario} && molecule verify -s ${scenario}"
-                            }
-                        }
-                    }
-                } catch(all) {
-                    echo "${distName} failed."
-                } finally {
-
-                    /**
-                    *
-                    *   DESTROY
-                    *
-                    **/
-
-                    def destroyRole = scenarioList.last()[0]
-                    def destroyScenario = scenarioList.last()[1]
-
-                    stage("Destroy - ${distName}") {
-                        withEnv([
-                        'HYPERVISOR_ANSIBLE_USER=',
-                        'HYPERVISOR_ANSIBLE_HOST=localhost',
-                        'HYPERVISOR_ANSIBLE_CONNECTION=local',
-                        'HYPERVISOR_ANSIBLE_PASSWORD=',
-                        'ANSIBLE_SERIAL=5',
-                        ]) {
-                            sh "cd ./roles/${destroyRole} && molecule destroy -s ${destroyScenario}"
-                        }
-                    }
-                }
+        stage("Uninstall") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule reset -s uninstall"
+                sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
+            }
+        }
+    } finally {
+        stage("Destroy") {
+            withCredentials([usernamePassword(
+                    credentialsId: 'jenkins_infra_account',
+                    usernameVariable: 'VSPHERE_USER',
+                    passwordVariable: 'VSPHERE_PASSWORD'
+            )]) {
+                sh "cd ./roles/setup && molecule destroy -s uninstall"
             }
         }
     }
 }
-
-@NonCPS
-List<List<?>> mapToList(Map map) {
-  return map.collect { it ->
-    [it.key, it.value]
-  }
-}
-
-parallel nodes
