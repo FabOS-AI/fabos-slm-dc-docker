@@ -12,12 +12,12 @@ node("built-in") {
                     usernameVariable: 'VSPHERE_USER',
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
-                sh "cd ./roles/use && molecule reset -s deploy"
                 sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
             }
         }
 
         stage("Install") {
+            sh "cd ./roles/setup && molecule reset -s install"
             sh "cd ./roles/setup && molecule converge -s install && molecule verify -s install"
         }
 
@@ -27,6 +27,7 @@ node("built-in") {
                     usernameVariable: 'VSPHERE_USER',
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
+                sh "cd ./roles/use && molecule reset -s deploy"
                 sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
             }
         }
@@ -37,6 +38,7 @@ node("built-in") {
                     usernameVariable: 'VSPHERE_USER',
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
+                sh "cd ./roles/use && molecule reset -s undeploy"
                 sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
             }
         }
@@ -47,6 +49,7 @@ node("built-in") {
                     usernameVariable: 'VSPHERE_USER',
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
+                sh "cd ./roles/setup && molecule reset -s uninstall"
                 sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
             }
         }
