@@ -22,16 +22,18 @@ node("built-in") {
                     usernameVariable: 'VSPHERE_USER',
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
-                sh "cd ./roles/setup && molecule reset -s install"
+
 
                 install_stages = [:]
 
                 install_stages['install-ubuntu'] = {
-                    sh "cd ./roles/setup && molecule converge -s install-ubuntu && molecule verify -s install-ubuntu"
+                    sh "cd ./roles/setup && molecule reset -s install-ubuntu"
+                    sh "cd ./roles/setup && molecule test -s install-ubuntu --destroy never --parallel" //&& molecule verify -s install-ubuntu"
                 }
 
                 install_stages['install-centos'] = {
-                    sh "cd ./roles/setup && molecule converge -s install-centos && molecule verify -s install-centos"
+                    sh "cd ./roles/setup && molecule reset -s install-centos"
+                    sh "cd ./roles/setup && molecule test -s install-centos --destroy never --parallel" // && molecule verify -s install-centos"
                 }
 
                 parallel install_stages
