@@ -28,12 +28,12 @@ node("built-in") {
 
                 install_stages['install-ubuntu'] = {
                     sh "cd ./roles/setup && molecule reset -s install-ubuntu"
-                    sh "cd ./roles/setup && molecule test -s install-ubuntu --destroy never --parallel" //&& molecule verify -s install-ubuntu"
+                    sh "cd ./roles/setup && molecule test -s install-ubuntu --parallel" //&& molecule verify -s install-ubuntu"
                 }
 
                 install_stages['install-centos'] = {
                     sh "cd ./roles/setup && molecule reset -s install-centos"
-                    sh "cd ./roles/setup && molecule test -s install-centos --destroy never --parallel" // && molecule verify -s install-centos"
+                    sh "cd ./roles/setup && molecule test -s install-centos --parallel" // && molecule verify -s install-centos"
                 }
 
                 parallel install_stages
