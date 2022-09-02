@@ -1,4 +1,11 @@
 ---
+- name: dpkg --configure -a
+  ansible.builtin.command: dpkg --configure -a
+  changed_when: false
+  register: dpkg_config
+  retries: 20
+  until: dpkg_config.rc == 0
+
 - name: Install supportive packages via apt
   ansible.builtin.apt:
     pkg:
