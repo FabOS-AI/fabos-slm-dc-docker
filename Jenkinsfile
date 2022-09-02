@@ -44,14 +44,8 @@ for (kv in mapToList(scenarios)) {
 
             stage("${plattform} - ${scenario}") {
                 docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
-                    withCredentials([usernamePassword(
-                            credentialsId: 'jenkins_infra_account',
-                            usernameVariable: 'VSPHERE_USER',
-                            passwordVariable: 'VSPHERE_PASSWORD'
-                    )]) {
-                        sh "ansible-galaxy install -f -r requirements.yml"
-                        sh "cd ./roles/${role} && molecule test -s ${scenario} -p ${plattform} --destroy never"
-                    }
+                    sh "ansible-galaxy install -f -r requirements.yml"
+                    sh "cd ./roles/${role} && molecule test -s ${scenario} -p ${plattform} --destroy never"
                 }
             }
         }
@@ -61,25 +55,20 @@ for (kv in mapToList(scenarios)) {
 node {
     checkout scm
 
-    stage("Create") {
-        withCredentials([usernamePassword(
-                credentialsId: 'jenkins_infra_account',
-                usernameVariable: 'VSPHERE_USER',
-                passwordVariable: 'VSPHERE_PASSWORD'
-        )]) {
+    withCredentials([usernamePassword(
+        credentialsId: 'jenkins_infra_account',
+        usernameVariable: 'VSPHERE_USER',
+        passwordVariable: 'VSPHERE_PASSWORD'
+    )]) {
+
+        stage("Create") {
             sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
         }
-    }
 
-    try {
-        parallel(parallel_stages)
-    } finally {
-        stage("Destroy") {
-            withCredentials([usernamePassword(
-                    credentialsId: 'jenkins_infra_account',
-                    usernameVariable: 'VSPHERE_USER',
-                    passwordVariable: 'VSPHERE_PASSWORD'
-            )]) {
+        try {
+            parallel(parallel_stages)
+        } finally {
+            stage("Destroy") {
                 sh "cd ./roles/setup && molecule destroy -s install"
             }
         }
