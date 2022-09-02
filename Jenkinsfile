@@ -1,80 +1,78 @@
-node("built-in") {
-    stage("Checkout") {
-        checkout scm
+def scenarios = [
+    "ubuntu2204": [
+        ["setup", "install"],
+        ["use", "deploy"],
+        ["use", "undeploy"],
+        ["setup", "uninstall"]
+    ],
+    "ubuntu2004": [
+        ["setup", "install"],
+        ["use", "deploy"],
+        ["use", "undeploy"],
+        ["setup", "uninstall"]
+    ],
+     "ubuntu1804": [
+         ["setup", "install"],
+         ["use", "deploy"],
+         ["use", "undeploy"],
+         ["setup", "uninstall"]
+     ],
+    "centos8": [
+       ["setup", "install"],
+       ["use", "deploy"],
+       ["use", "undeploy"],
+       ["setup", "uninstall"]
+    ],
+     "centos7": [
+        ["setup", "install"],
+        ["use", "deploy"],
+        ["use", "undeploy"],
+        ["setup", "uninstall"]
+     ]
+]
 
-        sh 'ansible-galaxy install -f -r requirements.yml'
+parallel_stages = [:]
+
+for (kv in mapToList(scenarios)) {
+    def plattform = kv[0]
+    def testList = kv[1]
+
+    parallel_stages[plattform] = {
+        for(int i = 0; i < testList.size(); i++) {
+            def role = testList[i][0]
+            def scenario = testList[i][1]
+
+            stage("${plattform} - ${scenario}") {
+                docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+                    withCredentials([usernamePassword(
+                            credentialsId: 'jenkins_infra_account',
+                            usernameVariable: 'VSPHERE_USER',
+                            passwordVariable: 'VSPHERE_PASSWORD'
+                    )]) {
+                        sh "ansible-galaxy install -f -r requirements.yml"
+                        sh "cd ./roles/${role} && molecule test -s ${scenario} -p ${plattform} --destroy never"
+                    }
+                }
+            }
+        }
+    }
+}
+
+node {
+    checkout scm
+
+    stage("Create") {
+        withCredentials([usernamePassword(
+                credentialsId: 'jenkins_infra_account',
+                usernameVariable: 'VSPHERE_USER',
+                passwordVariable: 'VSPHERE_PASSWORD'
+        )]) {
+            sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+        }
     }
 
     try {
-        stage("Create") {
-            withCredentials([usernamePassword(
-                    credentialsId: 'jenkins_infra_account',
-                    usernameVariable: 'VSPHERE_USER',
-                    passwordVariable: 'VSPHERE_PASSWORD'
-            )]) {
-                sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
-            }
-        }
-
-        stage("Install") {
-            withCredentials([usernamePassword(
-                    credentialsId: 'jenkins_infra_account',
-                    usernameVariable: 'VSPHERE_USER',
-                    passwordVariable: 'VSPHERE_PASSWORD'
-            )]) {
-
-
-                install_stages = [:]
-
-                install_stages['install-ubuntu'] = {
-
-                    docker.image('fabos4ai/molecule:4.0.1') {
-                        sh 'cd ./roles/setup && molecule converge -s install-ubuntu && molecule verify -s install-ubuntu'
-                    }
-                }
-
-                install_stages['install-centos'] = {
-                    docker.image('fabos4ai/molecule:4.0.1') {
-                        sh 'cd ./roles/setup && molecule converge -s install-centos && molecule verify -s install-centos'
-                    }
-                }
-
-                parallel install_stages
-            }
-        }
-
-        stage("Deploy") {
-            withCredentials([usernamePassword(
-                    credentialsId: 'jenkins_infra_account',
-                    usernameVariable: 'VSPHERE_USER',
-                    passwordVariable: 'VSPHERE_PASSWORD'
-            )]) {
-                sh "cd ./roles/use && molecule reset -s deploy"
-                sh "cd ./roles/use && molecule converge -s deploy && molecule verify -s deploy"
-            }
-        }
-
-        stage("Undeploy") {
-            withCredentials([usernamePassword(
-                    credentialsId: 'jenkins_infra_account',
-                    usernameVariable: 'VSPHERE_USER',
-                    passwordVariable: 'VSPHERE_PASSWORD'
-            )]) {
-                sh "cd ./roles/use && molecule reset -s undeploy"
-                sh "cd ./roles/use && molecule converge -s undeploy && molecule verify -s undeploy"
-            }
-        }
-
-        stage("Uninstall") {
-            withCredentials([usernamePassword(
-                    credentialsId: 'jenkins_infra_account',
-                    usernameVariable: 'VSPHERE_USER',
-                    passwordVariable: 'VSPHERE_PASSWORD'
-            )]) {
-                sh "cd ./roles/setup && molecule reset -s uninstall"
-                sh "cd ./roles/setup && molecule converge -s uninstall && molecule verify -s uninstall"
-            }
-        }
+        parallel(parallel_stages)
     } finally {
         stage("Destroy") {
             withCredentials([usernamePassword(
@@ -82,10 +80,15 @@ node("built-in") {
                     usernameVariable: 'VSPHERE_USER',
                     passwordVariable: 'VSPHERE_PASSWORD'
             )]) {
-                sh "cd ./roles/setup && molecule destroy -s uninstall"
-                sh "cd ./roles/setup && molecule reset -s install-ubuntu"
-                sh "cd ./roles/setup && molecule reset -s install-centos"
+                sh "cd ./roles/setup && molecule destroy -s install"
             }
         }
     }
+}
+
+@NonCPS
+List<List<?>> mapToList(Map map) {
+  return map.collect { it ->
+    [it.key, it.value]
+  }
 }
