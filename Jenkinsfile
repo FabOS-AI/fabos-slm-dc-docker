@@ -42,9 +42,17 @@ for (kv in mapToList(scenarios)) {
             def role = testList[i][0]
             def scenario = testList[i][1]
 
-            stage("${platform} - ${scenario}") {
-                docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+
+                stage("Install dependencies") {
                     sh "ansible-galaxy install -f -r requirements.yml"
+                }
+
+                stage("${platform} - Create") {
+                    sh "cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
+                }
+
+                stage("${platform} - ${scenario}") {
                     sh "cd ./roles/${role} && molecule test -s ${scenario} -p ${platform} --destroy never"
                 }
             }
@@ -61,9 +69,9 @@ node {
         passwordVariable: 'VSPHERE_PASSWORD'
     )]) {
 
-        stage("Create") {
-            sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
-        }
+//        stage("Create") {
+//            sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
+//        }
 
         try {
             parallel(parallel_stages)
