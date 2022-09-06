@@ -69,10 +69,6 @@ node {
         passwordVariable: 'VSPHERE_PASSWORD'
     )]) {
 
-//        stage("Create") {
-//            sh "cd ./roles/setup && molecule reset -s install && molecule create -s install"
-//        }
-
         try {
             parallel(parallel_stages)
         } finally {
