@@ -38,20 +38,20 @@ for (kv in mapToList(scenarios)) {
     def testList = kv[1]
 
     parallel_stages[platform] = {
-        for(int i = 0; i < testList.size(); i++) {
-            def role = testList[i][0]
-            def scenario = testList[i][1]
 
-            docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
+        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
 
-                stage("Install dependencies") {
-                    sh "ansible-galaxy install -f -r requirements.yml"
-                }
+            stage("Install dependencies") {
+                sh "ansible-galaxy install -f -r requirements.yml"
+            }
 
-                stage("${platform} - Create") {
-                    sh "cd ./roles/setup && molecule create -s install-${platform}"
-                }
+            stage("${platform} - Create") {
+                sh "cd ./roles/setup && molecule create -s install-${platform}"
+            }
 
+            for(int i = 0; i < testList.size(); i++) {
+                def role = testList[i][0]
+                def scenario = testList[i][1]
                 stage("${platform} - ${scenario}") {
                     sh "cd ./roles/${role} && molecule test -s ${scenario} -p ${platform} --destroy never"
                 }
