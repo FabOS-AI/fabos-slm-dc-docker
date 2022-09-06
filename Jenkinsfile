@@ -49,7 +49,7 @@ for (kv in mapToList(scenarios)) {
                 }
 
                 stage("${platform} - Create") {
-                    sh "cd ./roles/setup && molecule reset -s install-${platform} && molecule create -s install-${platform}"
+                    sh "cd ./roles/setup && molecule create -s install-${platform}"
                 }
 
                 stage("${platform} - ${scenario}") {
