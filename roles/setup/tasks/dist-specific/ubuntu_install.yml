@@ -1,13 +1,13 @@
 ---
-#- name: dpkg --configure -a
-#  ansible.builtin.command: dpkg --configure -a
-#  changed_when: false
-#  register: dpkg_config
-#  retries: 20
-#  until: dpkg_config.rc == 0
+- name: dpkg --configure -a
+  ansible.builtin.command: dpkg --configure -a
+  changed_when: false
+  register: dpkg_config
+  retries: 20
+  until: dpkg_config.rc == 0
 
-- name: Wait for /var/lib/dpkg/lock-frontend to be released
-  shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+#- name: Wait for /var/lib/dpkg/lock-frontend to be released
+#  shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
 
 #- name: Update apt cache
 #  ansible.builtin.apt:
@@ -19,6 +19,10 @@
       - ca-certificates
       - gnupg
     update_cache: yes
+  register: apt_result
+  retries: 20
+  delay: 3
+  until: apt_result.rc is not defined
 
 - name: Add Docker’s official GPG key
   ansible.builtin.apt_key:
@@ -37,8 +41,8 @@
   retries: 20
   until: dpkg_config.rc == 0
 
-- name: Wait for /var/lib/dpkg/lock-frontend to be released
-  shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+#- name: Wait for /var/lib/dpkg/lock-frontend to be released
+#  shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
 
 - name: Install docker engine and pip
   ansible.builtin.apt:
@@ -50,7 +54,7 @@
     update_cache: yes
   register: apt_result
   until: apt_result.rc is not defined
-  retries: 3
+  retries: 5
 
 - name: Install pip packages
   ansible.builtin.pip:
