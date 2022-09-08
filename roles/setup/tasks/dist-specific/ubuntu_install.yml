@@ -18,6 +18,7 @@
     pkg:
       - ca-certificates
       - gnupg
+      - python3-pip
     update_cache: yes
   register: apt_result
   retries: 20
@@ -28,6 +29,9 @@
   ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
+  register: apt_key_result
+  until: not apt_key_result.failed
+  retries: 20
 
 - name: Set up the stable repository
   ansible.builtin.apt_repository:
@@ -44,13 +48,12 @@
 #- name: Wait for /var/lib/dpkg/lock-frontend to be released
 #  shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
 
-- name: Install docker engine and pip
+- name: Install docker engine
   ansible.builtin.apt:
     pkg:
       - docker-ce
       - docker-ce-cli
       - containerd.io
-      - python3-pip
     update_cache: yes
   register: apt_result
   until: apt_result.rc is not defined
