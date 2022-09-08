@@ -62,3 +62,6 @@
     name:
       - docker
       - docker-compose
+  register: pip_result
+  until: not pip_result.failed
+  retries: 20
