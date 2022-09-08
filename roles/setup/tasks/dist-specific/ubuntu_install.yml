@@ -21,7 +21,7 @@
     update_cache: yes
   register: apt_result
   retries: 20
-  delay: 3
+  delay: 10
   until: apt_result.rc is not defined
 
 - name: Add Docker’s official GPG key
@@ -54,7 +54,8 @@
     update_cache: yes
   register: apt_result
   until: apt_result.rc is not defined
-  retries: 5
+  retries: 20
+  delay: 10
 
 - name: Install pip packages
   ansible.builtin.pip:
