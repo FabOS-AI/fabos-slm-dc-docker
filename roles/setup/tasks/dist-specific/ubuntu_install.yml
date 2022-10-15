@@ -1,18 +1,4 @@
 ---
-- name: dpkg --configure -a
-  ansible.builtin.command: dpkg --configure -a
-  changed_when: false
-  register: dpkg_config
-  retries: 20
-  until: dpkg_config.rc == 0
-
-#- name: Wait for /var/lib/dpkg/lock-frontend to be released
-#  shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
-
-#- name: Update apt cache
-#  ansible.builtin.apt:
-#    update_cache: yes
-
 - name: Install supportive packages via apt
   ansible.builtin.apt:
     pkg:
@@ -44,9 +30,6 @@
   register: dpkg_config
   retries: 20
   until: dpkg_config.rc == 0
-
-#- name: Wait for /var/lib/dpkg/lock-frontend to be released
-#  shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
 
 - name: Install docker engine
   ansible.builtin.apt:
