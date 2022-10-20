@@ -24,12 +24,12 @@
     repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
 
-- name: dpkg --configure -a
-  ansible.builtin.command: dpkg --configure -a
-  changed_when: false
-  register: dpkg_config
-  retries: 20
-  until: dpkg_config.rc == 0
+#- name: dpkg --configure -a
+#  ansible.builtin.command: dpkg --configure -a
+#  changed_when: false
+#  register: dpkg_config
+#  retries: 20
+#  until: dpkg_config.rc == 0
 
 - name: Install docker engine
   ansible.builtin.apt:
