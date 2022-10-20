@@ -25,18 +25,5 @@ provisioner:
     destroy: ../default/destroy.yml
     converge: ../default-install/converge.yml
     verify: ../default-install/verify.yml
-scenario:
-  test_sequence:
-    - dependency
-    - lint
-    - cleanup
-    - destroy
-    - syntax
-    - create
-    - prepare
-    - converge
-    - idempotence
-    - side_effect
-    - verify
 verifier:
   name: ansible
