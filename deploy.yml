@@ -27,7 +27,7 @@
 
 - name: Deploy container on docker host
   hosts: target_hosts
-  gather_facts: yes
+  gather_facts: no
   become: yes
   tasks:
     - set_fact:
