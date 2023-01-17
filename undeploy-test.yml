@@ -1,0 +1,36 @@
+---
+- name: "Create inventory with target host(s)"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Set input parameter
+      ansible.builtin.set_fact:
+        resource_id: 249eea66-2201-4f79-bf30-6b99e68c0df2
+        service_id: b2c9c8f6-a051-4618-857b-c8bf839f065f
+        skip_helper: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      with_items: "{{ groups['all'] + ['localhost'] }}"
+
+    - name: "Check required variables"
+      assert:
+        that: "{{ item.name }} is defined"
+        fail_msg: "Missing variable '{{ item.name }}': {{ item.description }}"
+      with_items:
+        - { name: "resource_id",            description: "Id of the resource where the service is deployed." }
+        - { name: "service_id",             description: "Id of the service instance that should be removed." }
+
+    - include_role:
+        name: inventory_helper
+      when: not skip_helper
+
+- name: Undeploy container on docker host
+  hosts: target_hosts
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: "Include use - undeploy"
+      include_role:
+        name: "use"
+        tasks_from: undeploy.yml

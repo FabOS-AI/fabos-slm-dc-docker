@@ -1,0 +1,23 @@
+---
+- name: "Create inventory with target host(s)"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Set input parameter
+      ansible.builtin.set_fact:
+        skip_helper: true
+
+    - include_role:
+        name: inventory_helper
+      when: not skip_helper
+
+- name: Install docker
+  hosts: target_hosts
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: "Include setup - install"
+      include_role:
+        name: "setup"
+        tasks_from: install.yml

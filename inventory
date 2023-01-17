@@ -1,0 +1,3 @@
+[target_hosts]
+
+<insert-hostname-or-ip>   ansible_user=<insert-ssh-username>    ansible_ssh_pass=<insert-ssh-password>

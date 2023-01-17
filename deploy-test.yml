@@ -1,0 +1,68 @@
+---
+- name: "Create inventory with target host(s)"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: Set input parameter
+      ansible.builtin.set_fact:
+        docker_compose_file: "{{ lookup('file', 'docker-compose.yml') | from_yaml }}"
+        resource_id: 249eea66-2201-4f79-bf30-6b99e68c0df2
+        service_id: b2c9c8f6-a051-4618-857b-c8bf839f065f
+        skip_helper: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      with_items: "{{ groups['all'] + ['localhost'] }}"
+
+    - name: "Check required variables"
+      assert:
+        that: "{{ item.name }} is defined"
+        fail_msg: "Missing variable '{{ item.name }}': {{ item.description }}"
+      with_items:
+        - { name: "resource_id",            description: "Id of the resource where the service should be deployed." }
+        - { name: "service_id",             description: "Id of the service instance that will be deployed." }
+        - { name: "docker_compose_file",    description: "Content of Docker Compose file." }
+
+    - include_role:
+        name: inventory_helper
+      when: not skip_helper
+
+    - include_role:
+        name: "use"
+        tasks_from: helper/get_docker_registry_credentials.yml
+      loop: "{{ docker_registries_vault_paths|default([]) }}"
+      loop_control:
+        loop_var: docker_registry_vault_path
+      when: not skip_helper
+
+- name: Deploy container on docker host
+  hosts: target_hosts
+  gather_facts: no
+  become: yes
+  tasks:
+    - set_fact:
+        docker_registries: "{{ hostvars['localhost']['docker_registries'] }}"
+      when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
+
+    - name: "Login to required Docker Registries"
+      docker_login:
+        registry: "{{ item.address }}"
+        username: "{{ item.username }}"
+        password: "{{ item.password }}"
+        reauthorize: yes
+      with_items: "{{ docker_registries }}"
+      when: "(docker_registries is defined) and (docker_registries|length > 0)"
+      no_log: true
+
+    - name: "Include use - install"
+      include_role:
+        name: "use"
+        tasks_from: deploy.yml
+
+    - name: "Logout from required Docker Registries"
+      docker_login:
+        registry: "{{ item.address }}"
+        state: absent
+      with_items: "{{ docker_registries }}"
+      when: "(docker_registries is defined) and (docker_registries|length > 0)"
+      no_log: true
