@@ -10,7 +10,7 @@
         tasks_from: create_inventory.yml
 
 - name: Install docker
-  hosts: target_hosts
+  hosts: ssh
   gather_facts: yes
   become: yes
   tasks:
