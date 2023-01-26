@@ -1,8 +1,14 @@
 ---
+- name: Make sure directories of config files are created
+  ansible.builtin.file:
+    path: "{{ item.dest_dir }}"
+    state: directory
+  loop: "{{ expose_tcp_port.files }}"
+
 - name: Copy config files to remote
   ansible.builtin.copy:
     src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    dest: "{{ item.dest_dir }}{{ item.dest_file }}"
   loop: "{{ expose_tcp_port.files }}"
 
 - name: Reload + Restart docker daemon
