@@ -4,11 +4,13 @@
   connection: local
   gather_facts: no
   tasks:
-    - include_role:
+    - name: Use inventory Helper to setup ansible inventory
+      ansible.builtin.include_role:
         name: inventory_helper
+        tasks_from: create_inventory.yml
 
 - name: Uninstall docker
-  hosts: target_hosts
+  hosts: ssh
   gather_facts: yes
   become: yes
   tasks:
