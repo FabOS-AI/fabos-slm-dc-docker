@@ -1,0 +1,6 @@
+---
+- name: Remove config files from remote
+  ansible.builtin.copy:
+    path: "{{ item.dest_dir }}{{ item.dest_file }}"
+    state: absent
+  loop: "{{ expose_tcp_port.files }}"

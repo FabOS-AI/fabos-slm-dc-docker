@@ -12,3 +12,7 @@
   when:
     - ansible_distribution == 'Debian'
     - ansible_lsb.id == 'Raspbian'
+
+- name: Remove config files for exposing TCP port
+  ansible.builtin.include_tasks: helper/remove_config_for_expose_tcp_port.yml
+  when: true
