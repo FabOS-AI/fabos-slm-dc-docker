@@ -9,12 +9,12 @@
         that: "{{ item.name }} is defined"
         fail_msg: "Missing variable '{{ item.name }}': {{ item.description }}"
       with_items:
-        - { name: "resource_id",            description: "Id of the resource where the service should be deployed." }
-        - { name: "service_id",             description: "Id of the service instance that will be deployed." }
         - { name: "docker_compose_file",    description: "Content of Docker Compose file." }
 
-    - include_role:
+    - name: Use inventory Helper to setup ansible inventory
+      ansible.builtin.include_role:
         name: inventory_helper
+        tasks_from: create_inventory.yml
 
     - include_role:
         name: "use"
@@ -23,8 +23,8 @@
       loop_control:
         loop_var: docker_registry_vault_path
 
-- name: Deploy container on docker host
-  hosts: target_hosts
+- name: Deploy container on docker host (ssh)
+  hosts: ssh
   gather_facts: no
   become: yes
   tasks:
@@ -54,3 +54,16 @@
       with_items: "{{ docker_registries }}"
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
       no_log: true
+
+- name: Deploy container on docker host (tcp)
+  hosts: tcp
+  gather_facts: no
+  become: no
+  tasks:
+    - debug:
+        var: hostvars
+
+    - debug:
+        var: inventory_hostname
+
+    - fail:
