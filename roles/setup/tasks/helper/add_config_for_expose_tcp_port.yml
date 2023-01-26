@@ -1,0 +1,12 @@
+---
+- name: Copy config files to remote
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop: "{{ expose_tcp_port.files }}"
+
+- name: Reload + Restart docker daemon
+  ansible.builtin.systemd:
+      state: restarted
+      daemon_reload: yes
+      name: dockerd

@@ -1,2 +1,8 @@
 ---
 # defaults file for setup
+expose_tcp_port:
+  files:
+    - src: daemon.json
+      dest: /etc/docker/daemon.json
+    - src: override.conf
+      dest: /etc/systemd/system/docker.service.d/override.conf

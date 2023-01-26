@@ -12,3 +12,7 @@
   when:
     - ansible_distribution == 'Debian'
     - ansible_lsb.id == 'Raspbian'
+
+- name: Expose TCP port
+  ansible.builtin.include_tasks: helper/add_config_for_expose_tcp_port.yml
+  when: true
