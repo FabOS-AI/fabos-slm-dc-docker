@@ -5,6 +5,7 @@
 - name: "Get Container Facts"
   community.docker.docker_container_info:
     name: "{{ item }}"
+    docker_host: "{{ docker_host | default('unix://var/run/docker.sock') }}"
   register: container_facts
 
 - name: Add Container Fact to list
