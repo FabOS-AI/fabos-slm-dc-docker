@@ -9,14 +9,15 @@
         that: "{{ item.name }} is defined"
         fail_msg: "Missing variable '{{ item.name }}': {{ item.description }}"
       with_items:
-        - { name: "resource_id",            description: "Id of the resource where the service is deployed." }
         - { name: "service_id",             description: "Id of the service instance that should be removed." }
 
-    - include_role:
+    - name: Use inventory Helper to setup ansible inventory
+      ansible.builtin.include_role:
         name: inventory_helper
+        tasks_from: create_inventory.yml
 
-- name: Undeploy container on docker host
-  hosts: target_hosts
+- name: Undeploy container on docker host (ssh)
+  hosts: ssh
   gather_facts: no
   become: yes
   tasks:
@@ -24,3 +25,13 @@
       include_role:
         name: "use"
         tasks_from: undeploy.yml
+
+- name: Undeploy container on docker host (tcp)
+  hosts: tcp
+  gather_facts: no
+  become: yes
+  tasks:
+    - name: "Include use - undeploy_tcp"
+      include_role:
+        name: "use"
+        tasks_from: undeploy_tcp.yml
