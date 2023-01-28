@@ -80,14 +80,6 @@
         name: "use"
         tasks_from: deploy_tcp.yml
 
-    - debug:
-        var: hostvars
-
-    - debug:
-        var: inventory_hostname
-
-    - fail:
-
     - name: "Logout from required Docker Registries"
       docker_login:
         registry: "{{ item.address }}"
