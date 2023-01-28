@@ -42,7 +42,7 @@
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
       no_log: true
 
-    - name: "Include use - install"
+    - name: "Include use - deploy"
       include_role:
         name: "use"
         tasks_from: deploy.yml
@@ -75,7 +75,7 @@
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
       no_log: true
 
-    - name: Install docker client
+    - name: "Include use - deploy_tcp"
       ansible.builtin.include_role:
         name: "use"
         tasks_from: deploy_tcp.yml
