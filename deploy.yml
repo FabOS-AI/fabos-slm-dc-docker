@@ -60,6 +60,21 @@
   gather_facts: no
   become: no
   tasks:
+    - name: Install docker client
+      ansible.builtin.include_role:
+        name: "setup"
+        tasks_from: install_client.yml
+
+    - name: "Login to required Docker Registries"
+      docker_login:
+        registry: "{{ item.address }}"
+        username: "{{ item.username }}"
+        password: "{{ item.password }}"
+        reauthorize: yes
+      with_items: "{{ docker_registries }}"
+      when: "(docker_registries is defined) and (docker_registries|length > 0)"
+      no_log: true
+
     - debug:
         var: hostvars
 
@@ -67,3 +82,11 @@
         var: inventory_hostname
 
     - fail:
+
+    - name: "Logout from required Docker Registries"
+      docker_login:
+        registry: "{{ item.address }}"
+        state: absent
+      with_items: "{{ docker_registries }}"
+      when: "(docker_registries is defined) and (docker_registries|length > 0)"
+      no_log: true
