@@ -57,7 +57,7 @@
 
 - name: Deploy container on docker host (tcp)
   hosts: tcp
-  gather_facts: no
+  gather_facts: yes
   become: no
   tasks:
     - name: Install docker client
