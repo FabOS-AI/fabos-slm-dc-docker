@@ -75,6 +75,11 @@
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
       no_log: true
 
+    - name: Install docker client
+      ansible.builtin.include_role:
+        name: "use"
+        tasks_from: deploy_tcp.yml
+
     - debug:
         var: hostvars
 
