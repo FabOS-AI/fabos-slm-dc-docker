@@ -6,8 +6,8 @@
   with_items:
     - { name: "service_id",             description: "Id of the service instance that will be deployed." }
 
-- name: Set docker_host fact
-  ansible.bultin.set_fact:
+- name: "Set docker host fact"
+  set_fact:
     docker_host: "tcp://{{ inventory_hostname }}:2375"
 
 - name: "Get Container ID"
