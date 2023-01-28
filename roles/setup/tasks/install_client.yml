@@ -1,44 +1,32 @@
 ---
-- name: Install supportive packages via apt
-  ansible.builtin.apt:
-    pkg:
-      - ca-certificates
-      - gnupg
-      - python3-pip
-    update_cache: yes
-  register: apt_result
-  retries: 20
-  delay: 10
-  until: apt_result.rc is not defined
+- name: Install the yum-utils package
+  ansible.builtin.yum:
+    name: yum-utils
 
-- name: Add Docker’s official GPG key
-  ansible.builtin.apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
-  register: apt_key_result
-  until: not apt_key_result.failed
-  retries: 20
+- name: Add stable docker repository
+  ansible.builtin.yum_repository:
+    name: docker
+    description: Docker stable repository
+    baseurl: "https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable"
+    gpgcheck: no
 
-- name: Set up the stable repository
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-    state: present
-
-- name: Install docker engine
-  ansible.builtin.apt:
-    pkg:
+- name: Install docker
+  ansible.builtin.yum:
+    name:
       - docker-ce-cli
     update_cache: yes
-  register: apt_result
-  until: apt_result.rc is not defined
-  retries: 20
-  delay: 10
 
-- name: Install pip packages
+- name: Install pip3
+  ansible.builtin.yum:
+    name: python3-pip
+
+- name: Upgrade pip
+  ansible.builtin.pip:
+    name: pip
+    state: latest
+
+- name: Install 'docker', 'docker-compose' pip package (CentOS 8)
   ansible.builtin.pip:
     name:
       - docker
       - docker-compose
-  register: pip_result
-  until: not pip_result.failed
-  retries: 20
