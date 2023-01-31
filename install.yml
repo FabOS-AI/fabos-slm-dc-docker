@@ -9,7 +9,7 @@
         name: inventory_helper
         tasks_from: create_inventory.yml
 
-- name: Install docker
+- name: Install docker (ssh)
   hosts: ssh
   gather_facts: yes
   become: yes
@@ -18,3 +18,11 @@
       include_role:
         name: "setup"
         tasks_from: install.yml
+
+- name: Install docker (winrm)
+  hosts: winrm
+  gather_facts: no
+  become: no
+  tasks:
+    - debug:
+        msg: test
