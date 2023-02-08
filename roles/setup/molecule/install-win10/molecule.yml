@@ -1,0 +1,37 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: delegated
+platforms:
+  - name: win10
+    instance: win10
+    address: ${WIN10_ADDRESS}
+    user: ${WIN10_USER}
+    password: ${WIN10_PASSWORD}
+    port: "5985"
+    connection: "winrm"
+    winrm_transport: "basic"
+
+provisioner:
+  name: ansible
+  playbooks:
+    create: ../default/create_win.yml
+    destroy: ../default/destroy_win.yml
+    converge: ../default-install/converge.yml
+    verify: ../default-install/verify.yml
+scenario:
+  test_sequence:
+    - dependency
+    - lint
+    - cleanup
+    - destroy
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - side_effect
+    - verify
+verifier:
+  name: ansible
