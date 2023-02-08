@@ -14,7 +14,8 @@
   become: yes
   tasks:
     - name: "Include docker - install"
-      include_role: "docker"
+      ansible.builtin.include_role:
+        name: "docker"
 
 - name: Install docker (winrm)
   hosts: winrm
@@ -22,4 +23,5 @@
   become: yes
   tasks:
     - name: "Include docker - install"
-      include_role: "docker"
+      ansible.builtin.include_role:
+        name: "docker"
