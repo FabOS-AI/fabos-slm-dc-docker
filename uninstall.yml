@@ -20,7 +20,7 @@
         state: absent
 
 - name: Uninstall docker (winrm)
-  hosts: winrm
+  hosts: WinRM
   gather_facts: yes
   become: yes
   tasks:
