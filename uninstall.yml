@@ -5,7 +5,7 @@
   gather_facts: no
   tasks:
     - name: Use inventory Helper to setup ansible inventory
-      ansbile.builtin.include_role:
+      ansible.builtin.include_role:
         name: inventory_helper
 
 - name: Uninstall docker (ssh)
