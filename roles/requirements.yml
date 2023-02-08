@@ -4,3 +4,7 @@ roles:
     scm: git
     version: main
     name: inventory_helper
+  - src: "git+https://github.com/FabOS-AI/fabos-slm-role-docker.git"
+    scm: git
+    version: main
+    name: docker

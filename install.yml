@@ -8,12 +8,18 @@
       ansbile.builtin.include_role:
         name: inventory_helper
 
-- name: Install docker
+- name: Install docker (ssh)
   hosts: ssh
   gather_facts: yes
   become: yes
   tasks:
-    - name: "Include setup - install"
-      include_role:
-        name: "setup"
-        tasks_from: install.yml
+    - name: "Include docker - install"
+      include_role: "docker"
+
+- name: Install docker (winrm)
+  hosts: winrm
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: "Include docker - install"
+      include_role: "docker"
