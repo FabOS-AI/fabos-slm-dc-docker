@@ -1,10 +1,23 @@
 ---
-- name: Converge
-  hosts: all
+- name: Converge - Uninstall docker (ssh)
+  hosts: ssh
   gather_facts: yes
   become: yes
   tasks:
-    - name: "Include setup - uninstall"
+    - name: "Include docker - uninstall"
       include_role:
-        name: "setup"
+        name: "docker"
+      vars:
+        state: absent
+
+- name: Converge - Uninstall docker (winrm)
+  hosts: WinRM
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: "Include docker - uninstall"
+      include_role:
+        name: "docker"
         tasks_from: uninstall.yml
+      vars:
+        state: absent
