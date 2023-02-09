@@ -6,8 +6,7 @@ driver:
 platforms:
   - name: ubuntu1804
     template_name: ubuntu-18-04
-    groups:
-      - test-machine
+    groups: ['ssh']
 provisioner:
   name: ansible
   playbooks:

@@ -6,6 +6,7 @@ driver:
 platforms:
   - name: centos8
     template_name: centos-stream-8
+    groups: ['ssh']
 provisioner:
   name: ansible
   playbooks:

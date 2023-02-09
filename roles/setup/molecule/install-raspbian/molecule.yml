@@ -8,6 +8,7 @@ platforms:
     address: ${RASPI_ADDRESS}
     user: ${RASPI_USER}
     password: ${RASPI_PASSWORD}
+    groups: ['ssh']
 provisioner:
   name: ansible
   playbooks:
