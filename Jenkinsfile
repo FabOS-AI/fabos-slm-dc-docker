@@ -43,6 +43,7 @@ for (kv in mapToList(scenarios)) {
 
             stage("Install dependencies") {
                 sh "ansible-galaxy install -f -r requirements.yml"
+                sh "ansible-galaxy install -f -r roles/requirements.yml"
             }
 
             stage("${platform} - Create") {
