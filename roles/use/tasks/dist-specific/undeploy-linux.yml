@@ -4,6 +4,10 @@
   register: get_container_output
   changed_when: false
 
+- name: Init container facts array
+  set_fact:
+      container_facts_list: []
+
 - name: "Get Container Facts by list of container IDs"
   include_tasks: "helper/get_container_facts_by_id_list.yml"
   loop: "{{ get_container_output.stdout_lines }}"
