@@ -46,11 +46,10 @@ provisioner:
     verify: ../default-install/verify.yml
   inventory:
     group_vars:
-      all:
+      win-ssh:
         ansible_become_method: runas
         ansible_become_user: ansible
         ansible_become_password: password
-      win-ssh:
         ansible_connection: ssh
         ansible_shell_type: powershell
         ansible_port: 22
@@ -59,6 +58,9 @@ provisioner:
         ansible_ssh_port: 22
         ansible_ssh_common_args: '-o ServerAliveInterval=10'
       winrm:
+        ansible_become_method: runas
+        ansible_become_user: ansible
+        ansible_become_password: password
         ansible_connection: psrp
         ansible_port: 5986
         ansible_winrm_transport: credssp
