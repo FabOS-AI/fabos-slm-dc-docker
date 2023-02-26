@@ -9,4 +9,4 @@
 
 - name: Add Container Fact to list
   set_fact:
-    container_facts_list: "{{ container_facts_list | default([]) + [ container_facts ] }}"
+    container_facts_list: "{{ container_facts_list + [ container_facts ] }}"
