@@ -3,100 +3,51 @@
 
 - name: Verify
   hosts: all
-  gather_facts: false
+  gather_facts: yes
   become: yes
   tasks:
     - name: Include vars file
       include_vars:
         file: ./vars/main.yml
 
-    - set_fact:
+    ### SERVICE-1:
+
+    - ansible.builtin.set_fact:
         docker_compose_file: "{{ docker_compose_file_1 }}"
         service_id: "{{ service_id_1 }}"
+      when: ansible_os_family != "Windows"
 
-    # Verify service-1
-    - name: Verify Set for service-1 deployment
-      block:
-      # Verify container is deleted
-      - name: Get name of service (service-1)
-        set_fact:
-          service_names: "{{ docker_compose_file.services | dict2items |  map(attribute='key') | list }}"
+    - ansible.builtin.set_fact:
+        docker_compose_file: "{{ docker_compose_file_1_win }}"
+        service_id: "{{ service_id_1 }}"
+      when: ansible_os_family == "Windows"
 
-      - name: Get Info about container by service name and service id (service-1)
-        include_tasks: "helper/get_container_info_by_list_of_service_names.yml"
-        loop: "{{ service_names }}"
+    - name: Run Linux Verify
+      when: ansible_os_family != "Windows"
+      ansible.builtin.include: verify-linux.yml
 
-      - assert:
-          that: item.exists == false
-        loop: "{{ container_info_list }}"
+    - name: Run Windows Verify
+      when: ansible_os_family == "Windows"
+      ansible.builtin.include: verify-win.yml
 
-      # Verify Volume is deleted
-      - name: Get name of volumes (service-1)
-        set_fact:
-          volume_names: "{{ docker_compose_file.volumes | dict2items |  map(attribute='key') | list }}"
+    ### SERVICE-2:
 
-      - name: Get Info about Volumes by volume name and service id (service-1)
-        include_tasks: "helper/get_volume_info_by_list_of_volume_names.yml"
-        loop: "{{ volume_names }}"
-
-      - assert:
-          that: item.exists == false
-        loop: "{{ volume_info_list }}"
-
-      # Verify Network is deleted
-      - name: Verify Network delete (service-1)
-        when: docker_compose_file.networks | default({}) | dict2items | list | length == 0
-        block:
-        - name: Get Network infos (service-1)
-          when: docker_compose_file.networks | default({}) | dict2items | list | length == 0
-          community.docker.docker_network_info:
-            name: "{{ service_id }}_default"
-          register: network_info
-
-        - assert:
-            that: network_info.exists == false
-
-    - set_fact:
+    - ansible.builtin.set_fact:
         docker_compose_file: "{{ docker_compose_file_2 }}"
         service_id: "{{ service_id_2 }}"
+      when: ansible_os_family != "Windows"
 
-    # Verify service-2
-    - name: Verify Set for service-2 deployment
-      block:
-      # Verify container is deleted
-      - name: Get name of service (service-2)
-        set_fact:
-          service_names: "{{ docker_compose_file.services | dict2items |  map(attribute='key') | list }}"
+    - ansible.builtin.set_fact:
+        docker_compose_file: "{{ docker_compose_file_2_win }}"
+        service_id: "{{ service_id_2 }}"
+      when: ansible_os_family == "Windows"
 
-      - name: Get Info about container by service name and service id (service-2)
-        include_tasks: "helper/get_container_info_by_list_of_service_names.yml"
-        loop: "{{ service_names }}"
+    - name: Run Linux Verify
+      when: ansible_os_family != "Windows"
+      ansible.builtin.include: verify-linux.yml
 
-      - assert:
-          that: item.exists == false
-        loop: "{{ container_info_list }}"
+    - name: Run Windows Verify
+      when: ansible_os_family == "Windows"
+      ansible.builtin.include: verify-win.yml
 
-      # Verify Volume is deleted
-      - name: Get name of volumes (service-2)
-        set_fact:
-          volume_names: "{{ docker_compose_file.volumes | dict2items |  map(attribute='key') | list }}"
 
-      - name: Get Info about Volumes by volume name and service id (service-2)
-        include_tasks: "helper/get_volume_info_by_list_of_volume_names.yml"
-        loop: "{{ volume_names }}"
-
-      - assert:
-          that: item.exists == false
-        loop: "{{ volume_info_list }}"
-
-      # Verify Network is deleted
-      - name: Verify Network delete (service-2)
-        when: docker_compose_file.networks | default({}) | dict2items | list | length == 0
-        block:
-        - name: Get Network infos (service-2)
-          community.docker.docker_network_info:
-            name: "{{ service_id }}_default"
-          register: network_info
-
-        - assert:
-            that: network_info.exists == false
