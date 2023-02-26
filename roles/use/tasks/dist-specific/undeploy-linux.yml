@@ -1,0 +1,40 @@
+---
+- name: "Get Container ID"
+  ansible.builtin.shell: "docker ps -a --filter 'label=com.docker.compose.project={{ service_id }}' --format {%raw%}{{.ID}}{%endraw%}"
+  register: get_container_output
+  changed_when: false
+
+- name: "Get Container Facts by list of container IDs"
+  include_tasks: "helper/get_container_facts_by_id_list.yml"
+  loop: "{{ get_container_output.stdout_lines }}"
+  when:
+    - get_container_output.stdout is defined
+    - get_container_output.stdout_lines | length > 0
+
+- name: "Get Volumes and Networks of Container"
+  set_fact:
+    container_volumes: "{{ container_volumes | default([]) + item.container.Mounts }}"
+    container_networks: "{{ container_networks | default({}) | combine(item.container.NetworkSettings.Networks) }}"
+  loop: "{{ container_facts_list }}"
+  when: container_facts_list | default([]) | length > 0
+
+- name: "Remove Container"
+  community.docker.docker_container:
+    name: "{{ item.container.Name }}"
+    state: absent
+  loop: "{{ container_facts_list }}"
+  when: container_facts_list | default([]) | length > 0
+
+- name: "Remove Volumes"
+  community.docker.docker_volume:
+    name: "{{ item.Name }}"
+    state: absent
+  loop: "{{ container_volumes }}"
+  when: container_volumes | default([]) | length > 0
+
+- name: "Remove Networks"
+  community.docker.docker_network:
+    name: "{{ item.key }}"
+    state: absent
+  loop: "{{ container_networks | dict2items }}"
+  when: container_networks | default({}) | dict2items | length > 0
