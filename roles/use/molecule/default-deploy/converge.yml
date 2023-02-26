@@ -1,14 +1,18 @@
 ---
 - name: Converge
   hosts: all
-  gather_facts: no
+  gather_facts: yes
   become: yes
   tasks:
     - name: Include vars file
-      include_vars:
+      ansible.builtin.include_vars:
         file: ./vars/main.yml
 
+    - ansible.builtin.set_fact:
+        docker_compose_file: "{{ docker_compose_file_win }}"
+      when: ansible_os_family == "Windows"
+
     - name: "Include use - install"
-      include_role:
+      ansible.builtin.include_role:
         name: "use"
         tasks_from: deploy.yml
