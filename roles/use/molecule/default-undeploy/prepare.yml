@@ -5,7 +5,8 @@
   become: yes
   tasks:
     - name: "Include setup - install"
-      include_role:
+      when: ansible_os_family != "Windows"
+      ansible.builtin.include_role:
         name: "setup"
         tasks_from: install.yml
 
@@ -13,18 +14,40 @@
       include_vars:
         file: ./vars/main.yml
 
-    - name: "Include setup - install (service-1)"
-      include_role:
-        name: "use"
-        tasks_from: deploy.yml
-      vars:
-        service_id: "{{ service_id_1 }}"
-        docker_compose_file: "{{ docker_compose_file_1 }}"
+    - name: LINUX Deployment
+      when: ansible_os_family != "Windows"
+      block:
+        - name: "Include use - deploy (service-1)"
+          include_role:
+            name: "use"
+            tasks_from: deploy.yml
+          vars:
+            service_id: "{{ service_id_1 }}"
+            docker_compose_file: "{{ docker_compose_file_1 }}"
 
-    - name: "Include setup - install (service-2)"
-      include_role:
-        name: "use"
-        tasks_from: deploy.yml
-      vars:
-        service_id: "{{ service_id_2 }}"
-        docker_compose_file: "{{ docker_compose_file_2 }}"
+        - name: "Include use - deploy (service-2)"
+          include_role:
+            name: "use"
+            tasks_from: deploy.yml
+          vars:
+            service_id: "{{ service_id_2 }}"
+            docker_compose_file: "{{ docker_compose_file_2 }}"
+
+    - name: WINDOWS Deployment
+      when: ansible_os_family == "Windows"
+      block:
+        - name: "Include use - deploy (service-1)"
+          include_role:
+            name: "use"
+            tasks_from: deploy.yml
+          vars:
+            service_id: "{{ service_id_1 }}"
+            docker_compose_file: "{{ docker_compose_file_1_win }}"
+
+        - name: "Include use - deploy (service-2)"
+          include_role:
+            name: "use"
+            tasks_from: deploy.yml
+          vars:
+            service_id: "{{ service_id_2 }}"
+            docker_compose_file: "{{ docker_compose_file_2_win }}"
