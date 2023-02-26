@@ -20,7 +20,8 @@
               'user': "{{ item.user | default('') }}",
               'password': "{{ item.password | default('') }}",
               'port': "{{ item.port | default('') }}",
-              'connection': "{{ item.connection | default('') }}",
+              'connection': "",
+              'winrm_transport':  " {{ 'credssp' if item.connection == 'winrm' else '' }}",
               'identity_file': "{{ item.identity_file | default('') }}", }
           with_items: "{{ server.results }}"
           register: instance_config_dict
