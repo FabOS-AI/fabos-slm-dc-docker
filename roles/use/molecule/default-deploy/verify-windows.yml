@@ -1,0 +1,19 @@
+---
+- name: Get name of service
+  ansible.builtin.set_fact:
+    service_name: "{{ docker_compose_file_win.services | first }}"
+
+- name: Get infos on container
+  ansible.windows.win_command: "docker container inspect {{ service_id }}-{{ service_name }}-1"
+  register: container_info_cmd
+
+- name: Set container facts
+  ansible.builtin.set_fact:
+    container_info: "{{ container_info_cmd.stdout | from_yaml | first }}"
+
+- debug:
+    var: container_info
+
+- assert:
+    that: container_info.State.Running == true
+    msg: "Container's running state is 'true'"

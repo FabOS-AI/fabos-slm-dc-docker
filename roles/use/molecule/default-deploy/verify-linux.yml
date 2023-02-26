@@ -1,0 +1,20 @@
+---
+- name: Get name of service
+  ansible.builtin.set_fact:
+    service_name: "{{ docker_compose_file.services | first }}"
+
+- name: Get infos on container
+  community.docker.docker_container_info:
+    name: "{{ service_id }}_{{ service_name }}_1"
+  register: container_info
+
+- assert:
+    that: container_info.container.State.Running == true
+
+- name: Get exposed port of service
+  set_fact:
+    service_port: "{{ docker_compose_file.services[service_name].ports[0] }}"
+
+- name: Wait for service port become available
+  wait_for:
+    port: "{{ docker_compose_file.services[service_name].ports[0] | split(':') | first }}"
