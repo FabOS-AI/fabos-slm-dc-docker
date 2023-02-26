@@ -28,7 +28,15 @@ def scenarios = [
         ["use", "deploy"],
         ["use", "undeploy"],
         ["setup", "uninstall"]
-     ]
+     ],
+    "win-10-ssh": [
+        ["use", "deploy"],
+        ["use", "undeploy"],
+    ],
+    "win-10-winrm": [
+            ["use", "deploy"],
+            ["use", "undeploy"],
+    ]
 ]
 
 parallel_stages = [:]
