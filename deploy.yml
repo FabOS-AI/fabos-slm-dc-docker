@@ -23,7 +23,7 @@
         loop_var: docker_registry_vault_path
 
 - name: Deploy container on docker host
-  hosts: ssh
+  hosts: all
   gather_facts: no
   become: yes
   tasks:
