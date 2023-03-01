@@ -38,7 +38,7 @@
 
     - name: docker-compose up (Windows)
       ansible.windows.win_command:
-        cmd: docker-compose up -d
+        cmd: '"docker-compose" "up" "-d"'
         chdir: "%TEMP%/{{ service_id }}"
 #      changed_when: "'Starting' in docker_compose.stderr"
 #      async: 300
