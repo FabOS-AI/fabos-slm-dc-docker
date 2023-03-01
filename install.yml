@@ -9,7 +9,7 @@
         name: inventory_helper
 
 - name: Install docker (ssh)
-  hosts: ssh
+  hosts: all
   gather_facts: yes
   become: yes
   tasks:
@@ -17,11 +17,11 @@
       ansible.builtin.include_role:
         name: "docker"
 
-- name: Install docker (winrm)
-  hosts: WinRM
-  gather_facts: yes
-  become: yes
-  tasks:
-    - name: "Include docker - install"
-      ansible.builtin.include_role:
-        name: "docker"
+#- name: Install docker (winrm)
+#  hosts: WinRM
+#  gather_facts: yes
+#  become: yes
+#  tasks:
+#    - name: "Include docker - install"
+#      ansible.builtin.include_role:
+#        name: "docker"

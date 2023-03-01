@@ -8,8 +8,8 @@
       ansible.builtin.include_role:
         name: inventory_helper
 
-- name: Uninstall docker (ssh)
-  hosts: ssh
+- name: Uninstall docker
+  hosts: all
   gather_facts: yes
   become: yes
   tasks:
@@ -19,14 +19,14 @@
       vars:
         state: absent
 
-- name: Uninstall docker (winrm)
-  hosts: WinRM
-  gather_facts: yes
-  become: yes
-  tasks:
-    - name: "Include docker - uninstall"
-      include_role:
-        name: "docker"
-        tasks_from: uninstall.yml
-      vars:
-        state: absent
+#- name: Uninstall docker (winrm)
+#  hosts: WinRM
+#  gather_facts: yes
+#  become: yes
+#  tasks:
+#    - name: "Include docker - uninstall"
+#      include_role:
+#        name: "docker"
+#        tasks_from: uninstall.yml
+#      vars:
+#        state: absent

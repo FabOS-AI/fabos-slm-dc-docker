@@ -16,7 +16,7 @@
         name: inventory_helper
 
 - name: Undeploy container on docker host
-  hosts: ssh
+  hosts: all
   gather_facts: no
   become: yes
   tasks:
