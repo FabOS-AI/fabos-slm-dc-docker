@@ -40,7 +40,7 @@
       ansible.windows.win_command: docker-compose up -d
       args:
         chdir: "%TEMP%/{{ service_id }}"
-#      changed_when: "'Starting' in docker_compose.stderr"
+      changed_when: "'Starting' in docker_compose.stderr"
 #      async: 300
 #      poll: 5
       register: docker_compose
