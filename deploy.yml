@@ -58,7 +58,7 @@
 
             - name: Create auths variable
               ansible.builtin.set_fact:
-                auths: "{{ ( auths | default({}) ) | combine({ 'auth': auth }) }}"
+                auths: "{{ ( auths | default({}) ) | combine({ item.address: { 'auth': auth }}) }}"
               with_items: "{{ docker_registries }}"
               vars:
                 auth: "{{ (item.username+':'+item.password) | b64encode }}"
