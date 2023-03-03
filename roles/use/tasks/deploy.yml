@@ -37,7 +37,7 @@
       until: not copy_compose_file.failed
 
     - name: docker-compose up (Windows)
-      ansible.windows.win_command: docker-compose up -d
+      ansible.windows.win_command: docker compose up -d
       args:
         chdir: "%TEMP%/{{ service_id }}"
       changed_when: "'Starting' in docker_compose.stderr"
