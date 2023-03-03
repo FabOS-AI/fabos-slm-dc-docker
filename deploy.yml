@@ -56,20 +56,31 @@
               ansible.builtin.set_fact:
                 config_json_orig: "{{ slrup_config_json['content'] | b64decode | from_json }}"
 
-            - name: Create auths variable
-              ansible.builtin.set_fact:
-                auths: "{{ ( auths | default({}) ) | combine({ item.address: { 'auth': auth }}) }}"
-              with_items: "{{ docker_registries }}"
-              vars:
-                auth: "{{ (item.username+':'+item.password) | b64encode }}"
+#            - name: Create auths variable
+#              ansible.builtin.set_fact:
+#                auths: "{{ ( auths | default({}) ) | combine({ item.address: { 'auth': auth }}) }}"
+#              with_items: "{{ docker_registries }}"
+#              vars:
+#                auth: "{{ (item.username+':'+item.password) | b64encode }}"
+
+#            - set_fact:
+#                config_json: "{{ config_json_orig | combine({ 'auths': auths}, recursive=true) }}"
 
             - set_fact:
-                config_json: "{{ config_json_orig | combine({ 'auths': auths}, recursive=true) }}"
+                config_json: "{{ config_json_orig | combine({ 'credsStore': '' }, recursive=true) }}"
 
             - name: Save credentials to config.json
               ansible.windows.win_copy:
                 dest: '%userprofile%\.docker\config.json'
                 content: "{{ config_json | to_nice_json }}"
+
+            - name: Do login
+              ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
+              with_items: "{{ docker_registries }}"
+              no_log: false
+              become: no
+
+
 
     - name: "Include use - deploy"
       include_role:
