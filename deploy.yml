@@ -54,17 +54,22 @@
 
             - name: Get Content of config.json
               ansible.builtin.set_fact:
-                config_json: "{{ slrup_config_json['content'] | b64decode | from_json }}"
+                config_json_orig: "{{ slrup_config_json['content'] | b64decode | from_json }}"
 
-            - debug:
-                var: config_json
+            - name: Create auths variable
+              ansible.builtin.set_fact:
+                auths: "{{ ( auths | default({}) ) | combine({ 'auth': auth }) }}"
+              with_items: "{{ docker_registries }}"
+              vars:
+                auth: "{{ (item.username+':'+item.password) | b64encode }}"
 
-            - fail:
+            - set_fact:
+                config_json: "{{ config_json_orig | combine({ 'auths': auths}, recursive=true) }}"
 
-#          ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
-#          with_items: "{{ docker_registries }}"
-#          no_log: false
-#          become: no
+            - name: Save credentials to config.json
+              ansible.windows.win_copy:
+                dest: '%userprofile%\.docker\config.json'
+                content: "{{ config_json | to_nice_json }}"
 
     - name: "Include use - deploy"
       include_role:
@@ -82,8 +87,8 @@
           with_items: "{{ docker_registries }}"
           no_log: true
 
-        - name: Docker Logout (Windows)
+        - name: Restore original config.json content (Windows)
           when: ansible_os_family == "Windows"
-          ansible.windows.win_command: "docker logout {{ item.address }}"
-          with_items: "{{ docker_registries }}"
-          no_log: false
+          ansible.windows.win_copy:
+            dest: '%userprofile%\.docker\config.json'
+            content: "{{ config_json_orig | to_nice_json }}"
