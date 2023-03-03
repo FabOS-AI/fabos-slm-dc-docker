@@ -41,8 +41,8 @@
       args:
         chdir: "%TEMP%/{{ service_id }}"
       changed_when: "'Starting' in docker_compose.stderr"
-      async: 300
-      poll: 5
+#      async: 300
+#      poll: 5
       register: docker_compose
       retries: 5
       delay: 5
