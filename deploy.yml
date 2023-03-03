@@ -49,6 +49,7 @@
           ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
           with_items: "{{ docker_registries }}"
           no_log: false
+          become: no
 
     - name: "Include use - deploy"
       include_role:
