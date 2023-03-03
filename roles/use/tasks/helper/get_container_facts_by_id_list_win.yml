@@ -1,5 +1,5 @@
 ---
-- assert:
+- ansible.builtin.assert:
     that: item is defined
 
 - name: "Get Container Facts"
@@ -8,5 +8,5 @@
   changed_when: false
 
 - name: Add Container Fact to list
-  set_fact:
+  ansible.builtin.set_fact:
     container_facts_list: "{{ container_facts_list + container_facts_cmd.stdout | from_json }}"
