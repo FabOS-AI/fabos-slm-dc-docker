@@ -49,7 +49,7 @@
           block:
             - name: Lookup config.json
               ansible.builtin.slurp:
-                src: "%userprofile%\.docker\config.json"
+                src: '%userprofile%\.docker\config.json'
               register: slrup_config_json
 
             - name: Get Content of config.json
