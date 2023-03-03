@@ -5,7 +5,7 @@
   gather_facts: no
   tasks:
     - name: "Check required variables"
-      assert:
+      ansible.builtin.assert:
         that: "{{ item.name }} is defined"
         fail_msg: "Missing variable '{{ item.name }}': {{ item.description }}"
       with_items:
@@ -46,7 +46,7 @@
 
         - name: Docker Login (Windows)
           when: ansible_os_family == "Windows"
-          ansible.windows.command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
+          ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
           with_items: "{{ docker_registries }}"
           no_log: false
 
@@ -68,6 +68,6 @@
 
         - name: Docker Logout (Windows)
           when: ansible_os_family == "Windows"
-          ansible.windows.command: "docker logout {{ item.address }}"
+          ansible.windows.win_command: "docker logout {{ item.address }}"
           with_items: "{{ docker_registries }}"
           no_log: false
