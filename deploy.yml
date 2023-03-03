@@ -46,10 +46,25 @@
 
         - name: Docker Login (Windows)
           when: ansible_os_family == "Windows"
-          ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
-          with_items: "{{ docker_registries }}"
-          no_log: false
-          become: no
+          block:
+            - name: Lookup config.json
+              ansible.builtin.slurp:
+                src: "%userprofile%\.docker\config.json"
+              register: slrup_config_json
+
+            - name: Get Content of config.json
+              ansible.builtin.set_fact:
+                config_json: "{{ slrup_config_json['content'] | b64decode | from_json }}"
+
+            - debug:
+                var: config_json
+
+            - fail:
+
+#          ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
+#          with_items: "{{ docker_registries }}"
+#          no_log: false
+#          become: no
 
     - name: "Include use - deploy"
       include_role:
