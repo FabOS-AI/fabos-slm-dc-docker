@@ -44,9 +44,9 @@
           with_items: "{{ docker_registries }}"
           no_log: true
 
-        - name: Docker Login (Windows)
-          when: ansible_os_family == "Windows"
-          block:
+#        - name: Docker Login (Windows)
+#          when: ansible_os_family == "Windows"
+#          block:
 #            - name: Do login
 #              ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
 #              with_items: "{{ docker_registries }}"
