@@ -60,6 +60,7 @@
                 username: "{{ item.username }}"
                 secret: "{{ item.password }}"
                 state: present
+              loop: "{{ docker_registries }}"
 
 
 #            - name: Lookup config.json
