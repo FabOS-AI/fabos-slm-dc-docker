@@ -25,7 +25,7 @@
 - name: Deploy container on docker host
   hosts: all
   gather_facts: yes
-  become: no
+  become: yes
   tasks:
     - set_fact:
         docker_registries: "{{ hostvars['localhost']['docker_registries'] }}"
@@ -115,7 +115,6 @@
           ansible.windows.win_command: "docker logout {{ item.address }}"
           with_items: "{{ docker_registries }}"
           no_log: false
-          become: no
 
 
 #        - name: Restore original config.json content (Windows)
