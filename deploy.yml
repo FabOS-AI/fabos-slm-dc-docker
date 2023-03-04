@@ -53,15 +53,6 @@
 #              no_log: false
 #              become: no
 
-            - name: Add Creds to WinCred
-              community.windows.win_credential:
-                name: "{{ item.address }}"
-                type: generic_password
-                username: "{{ item.username }}"
-                secret: "{{ item.password }}"
-                state: present
-              loop: "{{ docker_registries }}"
-
 
 #            - name: Lookup config.json
 #              ansible.builtin.slurp:
@@ -110,11 +101,11 @@
           with_items: "{{ docker_registries }}"
           no_log: true
 
-        - name: Do Logout (Windows)
-          when: ansible_os_family == "Windows"
-          ansible.windows.win_command: "docker logout {{ item.address }}"
-          with_items: "{{ docker_registries }}"
-          no_log: false
+#        - name: Do Logout (Windows)
+#          when: ansible_os_family == "Windows"
+#          ansible.windows.win_command: "docker logout {{ item.address }}"
+#          with_items: "{{ docker_registries }}"
+#          no_log: false
 
 
 #        - name: Restore original config.json content (Windows)
