@@ -47,14 +47,14 @@
         - name: Docker Login (Windows)
           when: ansible_os_family == "Windows"
           block:
-            - name: Lookup config.json
-              ansible.builtin.slurp:
-                src: '%userprofile%\.docker\config.json'
-              register: slrup_config_json
-
-            - name: Get Content of config.json
-              ansible.builtin.set_fact:
-                config_json_orig: "{{ slrup_config_json['content'] | b64decode | from_json }}"
+#            - name: Lookup config.json
+#              ansible.builtin.slurp:
+#                src: '%userprofile%\.docker\config.json'
+#              register: slrup_config_json
+#
+#            - name: Get Content of config.json
+#              ansible.builtin.set_fact:
+#                config_json_orig: "{{ slrup_config_json['content'] | b64decode | from_json }}"
 
 #            - name: Create auths variable
 #              ansible.builtin.set_fact:
@@ -66,13 +66,13 @@
 #            - set_fact:
 #                config_json: "{{ config_json_orig | combine({ 'auths': auths}, recursive=true) }}"
 
-            - set_fact:
-                config_json: "{{ config_json_orig | combine({ 'credsStore': '' }, recursive=true) }}"
+#            - set_fact:
+#                config_json: "{{ config_json_orig | combine({ 'credsStore': '' }, recursive=true) }}"
 
-            - name: Save credentials to config.json
-              ansible.windows.win_copy:
-                dest: '%userprofile%\.docker\config.json'
-                content: "{{ config_json | to_nice_json }}"
+#            - name: Save credentials to config.json
+#              ansible.windows.win_copy:
+#                dest: '%userprofile%\.docker\config.json'
+#                content: "{{ config_json | to_nice_json }}"
 
             - name: Do login
               ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
@@ -98,8 +98,16 @@
           with_items: "{{ docker_registries }}"
           no_log: true
 
-        - name: Restore original config.json content (Windows)
-          when: ansible_os_family == "Windows"
-          ansible.windows.win_copy:
-            dest: '%userprofile%\.docker\config.json'
-            content: "{{ config_json_orig | to_nice_json }}"
+          - name: Do login
+            when: ansible_os_family == "Windows"
+            ansible.windows.win_command: "docker logout {{ item.address }}"
+            with_items: "{{ docker_registries }}"
+            no_log: false
+            become: no
+
+
+#        - name: Restore original config.json content (Windows)
+#          when: ansible_os_family == "Windows"
+#          ansible.windows.win_copy:
+#            dest: '%userprofile%\.docker\config.json'
+#            content: "{{ config_json_orig | to_nice_json }}"
