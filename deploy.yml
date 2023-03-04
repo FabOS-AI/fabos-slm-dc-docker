@@ -53,8 +53,14 @@
               no_log: false
               become: no
 
-            - name: Add Creds to WinCred
-              ansible.windows.
+#            - name: Add Creds to WinCred
+#              community.windows.win_credential:
+#                name: "{{ item.address }}"
+#                type: generic_password
+#                username: "{{ item.username }}"
+#                secret: "{{ item.password }}"
+#                state: present
+
 
 #            - name: Lookup config.json
 #              ansible.builtin.slurp:
