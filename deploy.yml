@@ -53,6 +53,9 @@
               no_log: false
               become: no
 
+            - name: Add Creds to WinCred
+              ansible.windows.
+
 #            - name: Lookup config.json
 #              ansible.builtin.slurp:
 #                src: '%userprofile%\.docker\config.json'
@@ -100,12 +103,12 @@
           with_items: "{{ docker_registries }}"
           no_log: true
 
-          - name: Do login
-            when: ansible_os_family == "Windows"
-            ansible.windows.win_command: "docker logout {{ item.address }}"
-            with_items: "{{ docker_registries }}"
-            no_log: false
-            become: no
+        - name: Do Logout (Windows)
+          when: ansible_os_family == "Windows"
+          ansible.windows.win_command: "docker logout {{ item.address }}"
+          with_items: "{{ docker_registries }}"
+          no_log: false
+          become: no
 
 
 #        - name: Restore original config.json content (Windows)
