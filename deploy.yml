@@ -47,19 +47,19 @@
         - name: Docker Login (Windows)
           when: ansible_os_family == "Windows"
           block:
-            - name: Do login
-              ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
-              with_items: "{{ docker_registries }}"
-              no_log: false
-              become: no
+#            - name: Do login
+#              ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
+#              with_items: "{{ docker_registries }}"
+#              no_log: false
+#              become: no
 
-#            - name: Add Creds to WinCred
-#              community.windows.win_credential:
-#                name: "{{ item.address }}"
-#                type: generic_password
-#                username: "{{ item.username }}"
-#                secret: "{{ item.password }}"
-#                state: present
+            - name: Add Creds to WinCred
+              community.windows.win_credential:
+                name: "{{ item.address }}"
+                type: generic_password
+                username: "{{ item.username }}"
+                secret: "{{ item.password }}"
+                state: present
 
 
 #            - name: Lookup config.json
