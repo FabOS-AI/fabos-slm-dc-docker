@@ -34,7 +34,9 @@
     name: "{{ item.Name }}"
     state: absent
   loop: "{{ container_volumes }}"
-  when: container_volumes | default([]) | length > 0
+  when:
+    - container_volumes | default([]) | length > 0
+    - item.Name is defined
 
 - name: "Remove Networks"
   community.docker.docker_network:
