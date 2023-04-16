@@ -42,7 +42,7 @@
             password: "{{ item.password }}"
             reauthorize: yes
           with_items: "{{ docker_registries }}"
-          no_log: true
+          no_log: false
 
 # Does not work with Windows 10 Build 18363.2274
 #        - name: Docker Login (Windows)
