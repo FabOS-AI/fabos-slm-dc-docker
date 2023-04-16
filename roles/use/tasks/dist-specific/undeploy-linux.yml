@@ -43,4 +43,6 @@
     name: "{{ item.key }}"
     state: absent
   loop: "{{ container_networks | dict2items }}"
-  when: container_networks | default({}) | dict2items | length > 0
+  when:
+    - container_networks | default({}) | dict2items | length > 0
+    - item.key == 'host'
