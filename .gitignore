@@ -6,3 +6,5 @@
 portainer_config
 RUN_MOLECULE.txt
 *.iml
+.run
+.test
