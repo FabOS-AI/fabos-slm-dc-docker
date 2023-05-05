@@ -1,0 +1,85 @@
+---
+- name: Install epel-release
+  ansible.builtin.yum:
+    name:
+      - epel-release
+
+- name: Install pip2
+  ansible.builtin.yum:
+    name:
+      - python-pip
+
+- name: Get version of 'certifi' pip package
+  ansible.builtin.stat:
+    path: /usr/lib/python2.7/site-packages/certifi-2020.4.5.1.dist-info
+  register: certifi_dist_info
+
+- name: Remove certifi version > 2020.4.5.1 manually
+  when: not certifi_dist_info.stat.exists
+  block:
+    - name: Find all directories of 'certifi' pip package
+      ansible.builtin.find:
+        paths: /usr/lib/python2.7/site-packages
+        patterns: certifi*
+      register: folders_to_delete
+
+    - name: Remove 'certifi' folder in sites-packages folder
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absend
+      loop: "{{folders_to_delete.files}}"
+
+- name: Install/Downgrade 'requests', 'certifi' pip package (CentOS 7)
+  ansible.builtin.pip:
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+  loop:
+    - name: certifi
+      version: 2020.4.5.1
+    - name: requests
+      version: 2.20.1
+
+- name: Add stable docker repository
+  ansible.builtin.yum_repository:
+    name: docker
+    description: Docker stable repository
+    baseurl: "https://download.docker.com/linux/centos/{{ ansible_distribution_major_version }}/x86_64/stable"
+    gpgcheck: no
+
+- name: Install docker
+  ansible.builtin.yum:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    update_cache: yes
+
+- name: Enable and Start docker daemon
+  ansible.builtin.systemd:
+    state: started
+    name: docker
+    enabled: yes
+
+- name: Download docker-compose
+  get_url:
+    url: https://github.com/docker/compose/releases/download/v2.3.3/docker-compose-linux-x86_64
+    dest: /usr/local/bin/docker-compose
+    mode: 755
+
+- name: Get list of installed pip packages
+  command: pip freeze
+  changed_when: false
+  register: pip_package_freeze
+
+- name: Install 'docker', 'docker-compose', 'websocket-client' pip package (CentOS 7)
+  ansible.builtin.pip:
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+  when: pip_package_freeze.stdout_lines | select('search', item.name+'==') | list | length == 0
+  loop:
+    - name: docker
+      version: 4.4.4
+    - name: docker-compose
+      version: 1.23.2
+    - name: websocket-client
+      version: 0.32.0

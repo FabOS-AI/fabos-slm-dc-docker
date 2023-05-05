@@ -3,35 +3,44 @@
   ansible.builtin.apt:
     pkg:
       - ca-certificates
-      - curl
       - gnupg
-      - lsb-release
+      - python3-pip
     update_cache: yes
+  register: apt_result
+  retries: 20
+  delay: 10
+  until: apt_result.rc is not defined
 
 - name: Add Docker’s official GPG key
   ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
+  register: apt_key_result
+  until: not apt_key_result.failed
+  retries: 20
 
 - name: Set up the stable repository
   ansible.builtin.apt_repository:
     repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
     state: present
 
-- name: Install docker engine and pip
+- name: Install docker engine
   ansible.builtin.apt:
     pkg:
       - docker-ce
       - docker-ce-cli
       - containerd.io
-      - python3-pip
     update_cache: yes
   register: apt_result
   until: apt_result.rc is not defined
-  retries: 3
+  retries: 20
+  delay: 10
 
 - name: Install pip packages
   ansible.builtin.pip:
     name:
       - docker
       - docker-compose
+  register: pip_result
+  until: not pip_result.failed
+  retries: 20

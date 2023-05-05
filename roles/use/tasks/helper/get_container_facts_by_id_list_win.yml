@@ -1,0 +1,12 @@
+---
+- ansible.builtin.assert:
+    that: item is defined
+
+- name: "Get Container Facts"
+  ansible.windows.win_command: "docker container inspect {{ item }}"
+  register: container_facts_cmd
+  changed_when: false
+
+- name: Add Container Fact to list
+  ansible.builtin.set_fact:
+    container_facts_list: "{{ container_facts_list + container_facts_cmd.stdout | from_json }}"

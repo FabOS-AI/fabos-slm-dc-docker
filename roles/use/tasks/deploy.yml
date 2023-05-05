@@ -7,8 +7,9 @@
     - { name: "service_id",             description: "Id of the service instance that will be deployed." }
     - { name: "docker_compose_file",    description: "Content of Docker Compose file." }
 
-- name: "Create Docker Compose Stack"
-  docker_compose:
+- name: "Create Docker Compose Stack (Linux)"
+  when: ansible_os_family != "Windows"
+  community.docker.docker_compose:
     state: "present"
     project_name: "{{ service_id }}"
     definition: "{{ docker_compose_file }}"
@@ -16,3 +17,33 @@
   retries: 5
   delay: 5
   until: docker_compose.failed == false
+
+- name: "Create Docker Compose Stack (Windows)"
+  when: ansible_os_family == "Windows"
+  block:
+    - name: Create Project Directory (Windows)
+      ansible.windows.win_file:
+        state: directory
+        path: "%TEMP%/{{ service_id }}"
+      async: 30
+      poll: 3
+
+    - name: Create docker-compose yml file (Windows)
+      ansible.windows.win_copy:
+        dest: "%TEMP%/{{ service_id }}/docker-compose.yml"
+        content: "{{ docker_compose_file }}"
+      register: copy_compose_file
+      retries: 5
+      until: not copy_compose_file.failed
+
+    - name: docker-compose up (Windows)
+      ansible.windows.win_command: docker compose up -d
+      args:
+        chdir: "%TEMP%/{{ service_id }}"
+      changed_when: "'Starting' in docker_compose.stderr"
+#      async: 300
+#      poll: 5
+      register: docker_compose
+      retries: 5
+      delay: 5
+      until: docker_compose.failed == false

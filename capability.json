@@ -1,0 +1,49 @@
+{
+  "capabilityClass": "DeploymentCapability",
+  "name": "Docker",
+  "logo": "mdi-docker",
+  "type": [
+    "SETUP",
+    "DEPLOY"
+  ],
+  "connection": "tcp",
+  "actions": {
+    "DEPLOY": {
+      "capabilityActionClass": "AwxCapabilityAction",
+      "capabilityActionType": "DEPLOY",
+      "awxRepo": "https://github.com/FabOS-AI/fabos-slm-dc-docker.git",
+      "awxBranch": "develop",
+      "playbook": "deploy.yml",
+      "connectionTypes": ["ssh", "WinSsh"]
+    },
+    "UNINSTALL": {
+      "capabilityActionClass": "AwxCapabilityAction",
+      "capabilityActionType": "UNINSTALL",
+      "awxRepo": "https://github.com/FabOS-AI/fabos-slm-dc-docker.git",
+      "awxBranch": "develop",
+      "playbook": "uninstall.yml",
+      "connectionTypes": ["ssh", "WinSsh"]
+    },
+    "INSTALL": {
+      "capabilityActionClass": "AwxCapabilityAction",
+      "capabilityActionType": "INSTALL",
+      "awxRepo": "https://github.com/FabOS-AI/fabos-slm-dc-docker.git",
+      "awxBranch": "develop",
+      "playbook": "install.yml",
+      "connectionTypes": ["ssh", "WinSsh"]
+    },
+    "UNDEPLOY": {
+      "capabilityActionClass": "AwxCapabilityAction",
+      "capabilityActionType": "UNDEPLOY",
+      "awxRepo": "https://github.com/FabOS-AI/fabos-slm-dc-docker.git",
+      "awxBranch": "develop",
+      "playbook": "undeploy.yml",
+      "connectionTypes": ["ssh", "WinSsh"]
+    }
+  },
+  "supportedDeploymentTypes": [
+    "DOCKER_CONTAINER",
+    "DOCKER_COMPOSE"
+  ],
+  "clusterMemberTypes": []
+}

@@ -1,118 +1,88 @@
 def scenarios = [
-    "master" : [
-        "ubuntu": [
-            ["setup", "install-ubuntu"],
-            ["use", "deploy-ubuntu"],
-            ["use", "undeploy-ubuntu"],
-            ["setup", "uninstall-ubuntu"],
-        ]
+    "ubuntu2204": [
+        ["setup", "install"],
+        ["use", "deploy"],
+        ["use", "undeploy"],
+        ["setup", "uninstall"]
     ],
-    "Agent-1" : [
-        "centos" : [
-            ["setup", "install-centos"],
-            ["use", "deploy-centos"],
-            ["use", "undeploy-centos"],
-            ["setup", "uninstall-centos"],
-        ]
+    "ubuntu2004": [
+        ["setup", "install"],
+        ["use", "deploy"],
+        ["use", "undeploy"],
+        ["setup", "uninstall"]
     ],
+     "ubuntu1804": [
+         ["setup", "install"],
+         ["use", "deploy"],
+         ["use", "undeploy"],
+         ["setup", "uninstall"]
+     ],
+    "centos8": [
+       ["setup", "install"],
+       ["use", "deploy"],
+       ["use", "undeploy"],
+       ["setup", "uninstall"]
+    ],
+     "centos7": [
+        ["setup", "install"],
+        ["use", "deploy"],
+        ["use", "undeploy"],
+        ["setup", "uninstall"]
+     ],
+    "win10-ssh": [
+        ["use", "deploy"],
+        ["use", "undeploy"],
+    ],
+    "win10-winrm": [
+            ["use", "deploy"],
+            ["use", "undeploy"],
+    ]
 ]
 
-def nodes = [:]
+parallel_stages = [:]
 
 for (kv in mapToList(scenarios)) {
-    def nodeName = kv[0]
-    def distList = kv[1]
+    def platform = kv[0]
+    def testList = kv[1]
 
-    nodes[nodeName] = {
-        node("${nodeName}") {
+    parallel_stages[platform] = {
 
-            /**
-            *
-            *   CHECKOUT
-            *
-            **/
+        docker.image('fabos4ai/molecule:4.0.1').inside('-u root') {
 
-            stage("Checkout") {
-                checkout scm
-
-                sh 'ansible-galaxy install -f -r requirements.yml'
+            stage("Install dependencies") {
+                sh "ansible-galaxy install -f -r requirements.yml"
+                sh "ansible-galaxy install -f -r roles/requirements.yml"
             }
 
-            for (xy in mapToList(distList)) {
-                def distName = xy[0]
-                def scenarioList = xy[1]
+            stage("${platform} - Create") {
+                sh "cd ./roles/setup && molecule create -s install-${platform}"
+            }
 
-                try {
-                    /**
-                    *
-                    *   CREATE
-                    *
-                    **/
-
-                    def createRole = scenarioList.first()[0]
-                    def createScenario = scenarioList.first()[1]
-
-                    stage("Create - ${distName}") {
-                        withEnv([
-                        'HYPERVISOR_ANSIBLE_USER=',
-                        'HYPERVISOR_ANSIBLE_HOST=localhost',
-                        'HYPERVISOR_ANSIBLE_CONNECTION=local',
-                        'HYPERVISOR_ANSIBLE_PASSWORD=',
-                        'ANSIBLE_SERIAL=5',
-                        ]) {
-                            retry(2) {
-                                sh "cd ./roles/${createRole} && molecule reset -s ${createScenario} && molecule create -s ${createScenario}"
-                            }
-                        }
-                    }
-
-                    /**
-                    *
-                    *   INSTALL, DEPLOY, UNDEPLOY, UNINSTALL
-                    *
-                    **/
-
-                    for(int i = 0; i < scenarioList.size(); i++) {
-                        def role = scenarioList[i][0]
-                        def scenario = scenarioList[i][1]
-
-                        stage("${scenario}") {
-                            withEnv([
-                            'HYPERVISOR_ANSIBLE_USER=',
-                            'HYPERVISOR_ANSIBLE_HOST=localhost',
-                            'HYPERVISOR_ANSIBLE_CONNECTION=local',
-                            'HYPERVISOR_ANSIBLE_PASSWORD=',
-                            'ANSIBLE_SERIAL=5',
-                            ]) {
-                                sh "cd ./roles/${role} && molecule converge -s ${scenario} && molecule verify -s ${scenario}"
-                            }
-                        }
-                    }
-                } catch(all) {
-                    echo "${distName} failed."
-                } finally {
-
-                    /**
-                    *
-                    *   DESTROY
-                    *
-                    **/
-
-                    def destroyRole = scenarioList.last()[0]
-                    def destroyScenario = scenarioList.last()[1]
-
-                    stage("Destroy - ${distName}") {
-                        withEnv([
-                        'HYPERVISOR_ANSIBLE_USER=',
-                        'HYPERVISOR_ANSIBLE_HOST=localhost',
-                        'HYPERVISOR_ANSIBLE_CONNECTION=local',
-                        'HYPERVISOR_ANSIBLE_PASSWORD=',
-                        'ANSIBLE_SERIAL=5',
-                        ]) {
-                            sh "cd ./roles/${destroyRole} && molecule destroy -s ${destroyScenario}"
-                        }
-                    }
+            for(int i = 0; i < testList.size(); i++) {
+                def role = testList[i][0]
+                def scenario = testList[i][1]
+                stage("${platform} - ${scenario}") {
+                    sh "cd ./roles/${role} && molecule test -s ${scenario} -p ${platform} --destroy never"
                 }
+            }
+        }
+    }
+}
+
+node {
+    checkout scm
+
+    withCredentials([usernamePassword(
+        credentialsId: 'jenkins_infra_account',
+        usernameVariable: 'VSPHERE_USER',
+        passwordVariable: 'VSPHERE_PASSWORD'
+    )]) {
+
+        try {
+            parallel(parallel_stages)
+        } finally {
+            stage("Destroy") {
+                sh "cd ./roles/setup && molecule destroy -s install"
             }
         }
     }
@@ -124,5 +94,3 @@ List<List<?>> mapToList(Map map) {
     [it.key, it.value]
   }
 }
-
-parallel nodes

@@ -5,29 +5,26 @@
   gather_facts: no
   tasks:
     - name: "Check required variables"
-      assert:
+      ansible.builtin.assert:
         that: "{{ item.name }} is defined"
         fail_msg: "Missing variable '{{ item.name }}': {{ item.description }}"
       with_items:
-        - { name: "resource_id",            description: "Id of the resource where the service should be deployed." }
-        - { name: "service_id",             description: "Id of the service instance that will be deployed." }
         - { name: "docker_compose_file",    description: "Content of Docker Compose file." }
 
-    - include_role:
+    - name: Use inventory Helper to setup ansible inventory
+      ansible.builtin.include_role:
         name: inventory_helper
 
-    - name: Get Docker registry credentials
-      include_role:
+    - include_role:
         name: "use"
         tasks_from: helper/get_docker_registry_credentials.yml
-      when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
       loop: "{{ docker_registries_vault_paths|default([]) }}"
       loop_control:
         loop_var: docker_registry_vault_path
 
 - name: Deploy container on docker host
-  hosts: target_hosts
-  gather_facts: no
+  hosts: all
+  gather_facts: yes
   become: yes
   tasks:
     - set_fact:
@@ -35,24 +32,46 @@
       when: "(docker_registries_vault_paths is defined) and (docker_registries_vault_paths|length > 0)"
 
     - name: "Login to required Docker Registries"
-      docker_login:
-        registry: "{{ item.address }}"
-        username: "{{ item.username }}"
-        password: "{{ item.password }}"
-        reauthorize: yes
-      with_items: "{{ docker_registries }}"
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
-      no_log: true
+      block:
+        - name: Docker Login (Linux)
+          when: ansible_os_family != "Windows"
+          community.docker.docker_login:
+            registry: "{{ item.address }}"
+            username: "{{ item.username }}"
+            password: "{{ item.password }}"
+            reauthorize: yes
+          with_items: "{{ docker_registries }}"
+          no_log: false
 
-    - name: "Include use - install"
+# Does not work with Windows 10 Build 18363.2274
+#        - name: Docker Login (Windows)
+#          when: ansible_os_family == "Windows"
+#          block:
+#            - name: Do login
+#              ansible.windows.win_command: "docker login {{ item.address }} -u {{ item.username }} -p {{ item.password }}"
+#              with_items: "{{ docker_registries }}"
+#              no_log: false
+#              become: no
+
+    - name: "Include use - deploy"
       include_role:
         name: "use"
         tasks_from: deploy.yml
 
     - name: "Logout from required Docker Registries"
-      docker_login:
-        registry: "{{ item.address }}"
-        state: absent
-      with_items: "{{ docker_registries }}"
       when: "(docker_registries is defined) and (docker_registries|length > 0)"
-      no_log: true
+      block:
+        - name: Docker Logout (Linux)
+          when: ansible_os_family != "Windows"
+          community.docker.docker_login:
+            registry: "{{ item.address }}"
+            state: absent
+          with_items: "{{ docker_registries }}"
+          no_log: true
+
+#        - name: Do Logout (Windows)
+#          when: ansible_os_family == "Windows"
+#          ansible.windows.win_command: "docker logout {{ item.address }}"
+#          with_items: "{{ docker_registries }}"
+#          no_log: false

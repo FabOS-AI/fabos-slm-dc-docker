@@ -4,15 +4,24 @@
   connection: local
   gather_facts: no
   tasks:
-    - include_role:
+    - name: Use inventory Helper to setup ansible inventory
+      ansible.builtin.include_role:
         name: inventory_helper
 
-- name: Install docker
-  hosts: target_hosts
+- name: Install docker (ssh)
+  hosts: all
   gather_facts: yes
   become: yes
   tasks:
-    - name: "Include setup - install"
-      include_role:
-        name: "setup"
-        tasks_from: install.yml
+    - name: "Include docker - install"
+      ansible.builtin.include_role:
+        name: "docker"
+
+#- name: Install docker (winrm)
+#  hosts: WinRM
+#  gather_facts: yes
+#  become: yes
+#  tasks:
+#    - name: "Include docker - install"
+#      ansible.builtin.include_role:
+#        name: "docker"

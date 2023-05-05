@@ -1,5 +1,5 @@
 ---
-- assert:
+- ansible.builtin.assert:
     that: item is defined
 
 - name: "Get Container Facts"
@@ -8,5 +8,5 @@
   register: container_facts
 
 - name: Add Container Fact to list
-  set_fact:
-    container_facts_list: "{{ container_facts_list | default([]) + [ container_facts ] }}"
+  ansible.builtin.set_fact:
+    container_facts_list: "{{ container_facts_list + [ container_facts ] }}"

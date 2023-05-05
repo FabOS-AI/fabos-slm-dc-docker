@@ -1,0 +1,57 @@
+---
+- name: "Get Container ID"
+  ansible.windows.win_command: 'docker ps -a --filter "label=com.docker.compose.project={{ service_id }}" --format "{%raw%}{{.ID}}{%endraw%}"'
+  register: get_container_output
+  changed_when: false
+
+- name: Init container facts array
+  set_fact:
+      container_facts_list: []
+
+- name: "Get Container Facts by list of container IDs"
+  include_tasks: "helper/get_container_facts_by_id_list_win.yml"
+  loop: "{{ get_container_output.stdout_lines }}"
+  when:
+    - get_container_output.stdout is defined
+    - get_container_output.stdout_lines | length > 0
+
+- name: "Init Volume + Network"
+  set_fact:
+    container_volumes: []
+    container_networks: {}
+
+- name: "Get Volumes and Networks of Container"
+  set_fact:
+    container_volumes: "{{ container_volumes + item.Mounts }}"
+    container_networks: "{{ container_networks | combine(item.NetworkSettings.Networks) }}"
+  loop: "{{ container_facts_list }}"
+  when: container_facts_list | default([]) | length > 0
+
+- name: "Stop Container"
+  ansible.windows.win_command: "docker stop {{ item.Id }}"
+  loop: "{{ container_facts_list }}"
+  loop_control:
+    label: "{{ item.Id }}"
+  when: container_facts_list | default([]) | length > 0
+
+- name: "Remove Container"
+  ansible.windows.win_command: "docker rm {{ item.Id }}"
+  loop: "{{ container_facts_list }}"
+  loop_control:
+    label: "{{ item.Id }}"
+  when: container_facts_list | default([]) | length > 0
+
+- name: "Remove Volumes"
+  ansible.windows.win_command: "docker volume rm {{ item.Name }}"
+  loop: "{{ container_volumes }}"
+  when: container_volumes | default([]) | length > 0
+
+- name: "Remove Networks"
+  ansible.windows.win_command: " docker network rm {{item.key}}"
+  changed_when: network_removal_output.rc == 0
+  failed_when:
+    - network_removal_output.rc == 1
+    - "not 'No such network' in network_removal_output.stderr"
+  register: network_removal_output
+  loop: "{{ container_networks | dict2items }}"
+  when: container_networks | default({}) | dict2items | length > 0

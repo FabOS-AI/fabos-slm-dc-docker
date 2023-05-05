@@ -1,15 +1,18 @@
 ---
 - name: Converge
-  hosts: all:!hypervisor
+  hosts: ssh
   gather_facts: yes
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
-    - name: "Include setup - install"
-      include_role:
-        name: "setup"
-        tasks_from: install.yml
+    - name: "Include docker - install"
+      ansible.builtin.include_role:
+        name: "docker"
+
+- name: Install docker (winrm)
+  hosts: WinRM
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: "Include docker - install"
+      ansible.builtin.include_role:
+        name: "docker"

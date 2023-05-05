@@ -1,0 +1,52 @@
+---
+- debug:
+    var: docker_compose_file
+
+# Verify container is deleted:
+- name: Get name of service
+  set_fact:
+    service_names: "{{ docker_compose_file.services | dict2items |  map(attribute='key') | list }}"
+
+- name: Get Container info
+  ansible.windows.win_command: "docker container inspect {{ service_id }}-{{item}}-1"
+  loop: "{{ service_names }}"
+  register: container_info_output
+  failed_when: false
+
+- debug:
+    var: container_info_output
+
+- name: Assert Container info
+  assert:
+    that: item.rc == 1
+  loop: "{{ container_info_output.results }}"
+
+# Verify Volume is deleted
+- name: Get name of volumes
+  set_fact:
+    volume_names: "{{ (docker_compose_file.volumes | default({}) ) | dict2items |  map(attribute='key') | list }}"
+
+- debug:
+    var: volume_names
+
+- name: Get Volume info
+  ansible.windows.win_command: "docker volume inspect {{ service_id }}_{{item}}"
+  loop: "{{ volume_names }}"
+  register: volume_info_output
+  failed_when: false
+
+- assert:
+    that:
+      - volume_info_output.results is defined
+    msg: Found volumes. Expected no volumes
+  when: volume_names | length > 0
+
+# Verify Network is deleted
+- name: Get Network info default-network
+  ansible.windows.win_command: "docker network inspect {{ service_id }}_default"
+  register: network_info_output
+  failed_when: false
+
+- assert:
+    that: network_info_output.rc == 1
+    msg: Found network but expected none

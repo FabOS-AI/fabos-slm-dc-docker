@@ -1,0 +1,39 @@
+---
+# Verify container is deleted
+- name: Get name of service
+  set_fact:
+    service_names: "{{ docker_compose_file.services | dict2items |  map(attribute='key') | list }}"
+
+- name: Get Info about container by service name and service id (service-1)
+  include_tasks: "helper/get_container_info_by_list_of_service_names.yml"
+  loop: "{{ service_names }}"
+
+- assert:
+    that: item.exists == false
+  loop: "{{ container_info_list }}"
+
+# Verify Volume is deleted
+- name: Get name of volumes
+  set_fact:
+    volume_names: "{{ docker_compose_file.volumes | dict2items |  map(attribute='key') | list }}"
+
+- name: Get Info about Volumes by volume name and service id (service-1)
+  include_tasks: "helper/get_volume_info_by_list_of_volume_names.yml"
+  loop: "{{ volume_names }}"
+
+- assert:
+    that: item.exists == false
+  loop: "{{ volume_info_list }}"
+
+# Verify Network is deleted
+- name: Verify Network delete
+  when: docker_compose_file.networks | default({}) | dict2items | list | length == 0
+  block:
+  - name: Get Network infos
+    when: docker_compose_file.networks | default({}) | dict2items | list | length == 0
+    community.docker.docker_network_info:
+      name: "{{ service_id }}_default"
+    register: network_info
+
+  - assert:
+      that: network_info.exists == false

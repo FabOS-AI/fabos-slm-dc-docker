@@ -4,15 +4,29 @@
   connection: local
   gather_facts: no
   tasks:
-    - include_role:
+    - name: Use inventory Helper to setup ansible inventory
+      ansible.builtin.include_role:
         name: inventory_helper
 
 - name: Uninstall docker
-  hosts: target_hosts
+  hosts: all
   gather_facts: yes
   become: yes
   tasks:
-    - name: "Include setup - uninstall"
+    - name: "Include docker - uninstall"
       include_role:
-        name: "setup"
-        tasks_from: uninstall.yml
+        name: "docker"
+      vars:
+        state: absent
+
+#- name: Uninstall docker (winrm)
+#  hosts: WinRM
+#  gather_facts: yes
+#  become: yes
+#  tasks:
+#    - name: "Include docker - uninstall"
+#      include_role:
+#        name: "docker"
+#        tasks_from: uninstall.yml
+#      vars:
+#        state: absent

@@ -1,27 +1,22 @@
 ---
 - name: Converge
-  hosts: all:!hypervisor
-  gather_facts: no
-  vars:
-    ansible_libvirt_uri: >-
-      {% if hostvars[groups['hypervisor'] | first].ansible_connection == 'ssh' %}qemu+ssh://{{ hostvars[groups['hypervisor'] | first].ansible_user }}@{{ hostvars[groups['hypervisor'] | first].ansible_host }}/system{% else %}qemu:///system{% endif %}
-    ansible_connection: "community.libvirt.libvirt_qemu"
+  hosts: all
+  gather_facts: yes
   become: yes
-  serial: "{{ lookup('env', 'ANSIBLE_SERIAL') }}"
   tasks:
     - name: Include vars file
       include_vars:
         file: ./vars/main.yml
 
     - name: "Include use - undeploy (service-1)"
-      include_role:
+      ansible.builtin.include_role:
         name: "use"
         tasks_from: undeploy.yml
       vars:
         service_id: "{{ service_id_1 }}"
 
     - name: "Include use - undeploy (service-2)"
-      include_role:
+      ansible.builtin.include_role:
         name: "use"
         tasks_from: undeploy.yml
       vars:

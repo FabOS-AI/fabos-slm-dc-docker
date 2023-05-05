@@ -3,16 +3,14 @@ dependency:
   name: galaxy
 driver:
   name: delegated
-  options:
-    login_cmd_template: 'virsh -c qemu+ssh://${HYPERVISOR_ANSIBLE_USER}@${HYPERVISOR_ANSIBLE_HOST}/system console {instance}'
 platforms:
   - name: centos7
-    os: centos
-    version: 7
+    template_name: centos-7
+    groups: ['ssh']
 
   - name: centos8
-    os: centos
-    version: 8
+    template_name: centos-stream-8
+    groups: ['ssh']
 provisioner:
   name: ansible
   playbooks:
@@ -21,15 +19,5 @@ provisioner:
     destroy: ../default/destroy.yml
     converge: ../default-uninstall/converge.yml
     verify: ../default-uninstall/verify.yml
-  inventory:
-    hosts:
-      hypervisor:
-        hosts:
-          hypervisor-1:
-            ansible_user: ${HYPERVISOR_ANSIBLE_USER}
-            ansible_host: ${HYPERVISOR_ANSIBLE_HOST}
-            ansible_connection: ${HYPERVISOR_ANSIBLE_CONNECTION}
-            ansible_ssh_pass: ${HYPERVISOR_ANSIBLE_PASSWORD}
-            ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
 verifier:
   name: ansible
